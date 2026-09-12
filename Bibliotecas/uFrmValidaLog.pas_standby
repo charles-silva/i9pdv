@@ -1,0 +1,42 @@
+unit uFrmValidaLog;
+
+interface
+
+uses
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, cxGraphics, cxControls, cxLookAndFeels, cxLookAndFeelPainters, cxContainer, cxEdit, cxListBox, StdCtrls,
+  dximctrl, uFrmDModule, uFrmMain, uSimHyperLabel, dxGDIPlusClasses, ExtCtrls, AdvSmoothPanel, AdvSmoothExpanderPanel,
+  Menus, cxButtons;
+
+type
+  TFrmValidaLog = class(TForm)
+    dxImageListBox1: TdxImageListBox;
+    AdvSmoothExpanderPanel1: TAdvSmoothExpanderPanel;
+    btnConfirmar: TcxButton;
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure btnConfirmarClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FrmValidaLog: TFrmValidaLog;
+
+implementation
+
+{$R *.dfm}
+
+procedure TFrmValidaLog.btnConfirmarClick(Sender: TObject);
+begin
+  close;
+end;
+
+procedure TFrmValidaLog.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  FrmValidaLog.Release;
+  FrmValidaLog := nil;
+end;
+
+end.

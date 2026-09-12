@@ -1,0 +1,111 @@
+object FrmTEF: TFrmTEF
+  Left = 0
+  Top = 0
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsNone
+  ClientHeight = 171
+  ClientWidth = 427
+  Color = clWhite
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  FormStyle = fsStayOnTop
+  OldCreateOrder = False
+  Position = poScreenCenter
+  ShowHint = True
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Shape1: TShape
+    Left = 0
+    Top = 24
+    Width = 427
+    Height = 147
+    Margins.Left = 10
+    Margins.Top = 0
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alClient
+    Brush.Style = bsClear
+    Pen.Color = 11383299
+    ExplicitLeft = 4
+    ExplicitWidth = 366
+    ExplicitHeight = 141
+  end
+  object Shape2: TShape
+    Left = 0
+    Top = 0
+    Width = 427
+    Height = 24
+    Margins.Left = 10
+    Margins.Top = 0
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alTop
+    Brush.Color = 5986569
+    ExplicitLeft = -99
+    ExplicitWidth = 423
+  end
+  object lblTitle: TLabel
+    Left = 4
+    Top = 3
+    Width = 79
+    Height = 16
+    Caption = 'Mensagem'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblStatus: TLabel
+    Left = 7
+    Top = 87
+    Width = 413
+    Height = 24
+    Alignment = taCenter
+    AutoSize = False
+    Caption = 'Aguarde...'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -20
+    Font.Name = 'Tahoma'
+    Font.Style = []
+    ParentFont = False
+  end
+  object ACBrPosPrinter1: TACBrPosPrinter
+    Porta = 'COM3'
+    ConfigBarras.MostrarCodigo = False
+    ConfigBarras.LarguraLinha = 0
+    ConfigBarras.Altura = 0
+    ConfigBarras.Margem = 0
+    ConfigQRCode.Tipo = 2
+    ConfigQRCode.LarguraModulo = 4
+    ConfigQRCode.ErrorLevel = 0
+    LinhasEntreCupons = 0
+    ControlePorta = True
+    ArqLOG = 'E:\Wibi Tecnologia\Demos\TEF\Win32\Debug\PosPrinter.log'
+    Left = 303
+    Top = 29
+  end
+  object EasyTEF: TEasyTEFCliSiTef
+    caminhoCompletoCliSiTef32I = 'CliSiTef32I.dll'
+    contraSenha = 'D7680b9B585708'
+    hostSiTef = 'localhost'
+    loja = '00000000'
+    operador = '1'
+    terminal = 'SE000001'
+    OnExibirMenuOpcoesOperador = EasyTEFExibirMenuOpcoesOperador
+    OnExibirMensagem = EasyTEFExibirMensagem
+    Left = 304
+    Top = 77
+  end
+  object Timer1: TTimer
+    Enabled = False
+    Left = 304
+    Top = 125
+  end
+end

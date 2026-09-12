@@ -1,0 +1,78 @@
+package i9lib;
+{$R *.res}
+{$IFDEF IMPLICITBUILDING This IFDEF should not be used by users}
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS ON}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION OFF}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO ON}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES ON}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE DEBUG}
+{$ENDIF IMPLICITBUILDING}
+{$IMPLICITBUILD ON}
+
+requires
+  rtl,
+  dbrtl,
+  vcl,
+  vcldb,
+  vclimg,
+  vclsmp,
+  vclx,
+  xmlrtl,
+  vclactnband,
+  dsnap,
+  dsnapcon,
+  soaprtl,
+  inet,
+  IndyCore,
+  IndySystem,
+  IndyProtocols,
+  vclFireDAC,
+  FireDAC,
+  FireDACCommonDriver,
+  FireDACCommon,
+  FireDACCommonODBC,
+  FireDACMSSQLDriver,
+  adortl,
+  cxTreeListRS25,
+  dxPSCoreRS25,
+  cxPageControlRS25,
+  dxDockingRS25,
+  cxEditorsRS25,
+  cxLibraryRS25,
+  dxGDIPlusRS25,
+  dxCoreRS25,
+  dxThemeRS25,
+  cxDataRS25,
+  dxPScxCommonRS25,
+  dxComnRS25,
+  dxPSLnksRS25,
+  dxPScxTLLnkRS25,
+  dxLayoutControlRS25,
+  dxSpreadSheetRS25,
+  dxPSdxLCLnkRS25,
+  dxPScxGridLnkRS25,
+  cxGridRS25,
+  dxSkinsCoreRS25,
+  dxSkinCaramelRS25;
+
+contains
+  umgrlibpdv in 'umgrlibpdv.pas' {Form1};
+
+end.

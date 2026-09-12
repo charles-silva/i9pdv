@@ -1,0 +1,48 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{741E4676-2AE5-4757-A697-3201D17231B8}</ProjectGuid>
+    </PropertyGroup>
+    <ItemGroup>
+        <Projects Include="I9PDV.dproj">
+            <Dependencies/>
+        </Projects>
+        <Projects Include="C:\ACBr\Exemplos\ACBrSAT\Delphi\Fast Report\SATTeste.dproj">
+            <Dependencies/>
+        </Projects>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Default.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Default.Personality/>
+        </BorlandProject>
+    </ProjectExtensions>
+    <Target Name="I9PDV">
+        <MSBuild Projects="I9PDV.dproj"/>
+    </Target>
+    <Target Name="I9PDV:Clean">
+        <MSBuild Projects="I9PDV.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="I9PDV:Make">
+        <MSBuild Projects="I9PDV.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="SATTeste">
+        <MSBuild Projects="C:\ACBr\Exemplos\ACBrSAT\Delphi\Fast Report\SATTeste.dproj"/>
+    </Target>
+    <Target Name="SATTeste:Clean">
+        <MSBuild Projects="C:\ACBr\Exemplos\ACBrSAT\Delphi\Fast Report\SATTeste.dproj" Targets="Clean"/>
+    </Target>
+    <Target Name="SATTeste:Make">
+        <MSBuild Projects="C:\ACBr\Exemplos\ACBrSAT\Delphi\Fast Report\SATTeste.dproj" Targets="Make"/>
+    </Target>
+    <Target Name="Build">
+        <CallTarget Targets="I9PDV;SATTeste"/>
+    </Target>
+    <Target Name="Clean">
+        <CallTarget Targets="I9PDV:Clean;SATTeste:Clean"/>
+    </Target>
+    <Target Name="Make">
+        <CallTarget Targets="I9PDV:Make;SATTeste:Make"/>
+    </Target>
+    <Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+</Project>

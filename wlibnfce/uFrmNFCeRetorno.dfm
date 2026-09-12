@@ -1,0 +1,283 @@
+object FrmNFCeRetorno: TFrmNFCeRetorno
+  Left = 0
+  Top = 0
+  BorderStyle = bsNone
+  Caption = 'FrmNFCeRetorno'
+  ClientHeight = 479
+  ClientWidth = 640
+  Color = clWhite
+  Font.Charset = DEFAULT_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'Tahoma'
+  Font.Style = []
+  KeyPreview = True
+  OldCreateOrder = False
+  Position = poScreenCenter
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 13
+  object Shape27: TShape
+    Left = 0
+    Top = 24
+    Width = 640
+    Height = 455
+    Margins.Left = 10
+    Margins.Top = 0
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alClient
+    Brush.Style = bsClear
+    Pen.Color = 11383299
+    ExplicitTop = 25
+  end
+  object Shape4: TShape
+    Left = 9
+    Top = 311
+    Width = 623
+    Height = 138
+    Pen.Color = 11383299
+    Shape = stRoundRect
+  end
+  object Shape3: TShape
+    Left = 9
+    Top = 244
+    Width = 209
+    Height = 63
+    Pen.Color = 11383299
+    Shape = stRoundRect
+  end
+  object Shape2: TShape
+    Left = 9
+    Top = 101
+    Width = 623
+    Height = 128
+    Pen.Color = 11383299
+    Shape = stRoundRect
+  end
+  object Shape1: TShape
+    Left = 8
+    Top = 34
+    Width = 209
+    Height = 63
+    Pen.Color = 11383299
+    Shape = stRoundRect
+  end
+  object Shape8: TShape
+    Left = 423
+    Top = 33
+    Width = 209
+    Height = 63
+    Pen.Color = 11383299
+    Shape = stRoundRect
+  end
+  object Shape16: TShape
+    Left = 0
+    Top = 0
+    Width = 640
+    Height = 24
+    Margins.Left = 10
+    Margins.Top = 0
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alTop
+    Brush.Color = 5986569
+    ExplicitLeft = 4
+    ExplicitTop = 4
+    ExplicitWidth = 366
+  end
+  object lblTitle: TLabel
+    Left = 4
+    Top = 3
+    Width = 162
+    Height = 16
+    Caption = 'Mensagem de Retorno'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWhite
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+    StyleElements = []
+  end
+  object Label20: TLabel
+    Left = 428
+    Top = 34
+    Width = 142
+    Height = 20
+    Caption = 'C'#243'digo do Erro'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 11383299
+    Font.Height = -17
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object Label1: TLabel
+    Left = 15
+    Top = 37
+    Width = 177
+    Height = 20
+    Caption = 'C'#243'digo de Retorno'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 11383299
+    Font.Height = -17
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object Label2: TLabel
+    Left = 15
+    Top = 103
+    Width = 212
+    Height = 20
+    Caption = 'Mensagem de Retorno'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 11383299
+    Font.Height = -17
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object Label3: TLabel
+    Left = 15
+    Top = 246
+    Width = 152
+    Height = 20
+    Caption = 'C'#243'digo da Sefaz'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 11383299
+    Font.Height = -17
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object Label4: TLabel
+    Left = 15
+    Top = 314
+    Width = 187
+    Height = 20
+    Caption = 'Mensagem da Sefaz'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = 11383299
+    Font.Height = -17
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblMsgRapida: TLabel
+    Left = 8
+    Top = 455
+    Width = 231
+    Height = 16
+    Caption = 'Pressione [F3] para visualizar o log'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = []
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblCodigoRetorno: TLabel
+    Left = 94
+    Top = 63
+    Width = 42
+    Height = 23
+    Alignment = taCenter
+    Caption = '000'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblMensagemRetorno: TLabel
+    Left = 15
+    Top = 126
+    Width = 609
+    Height = 95
+    AutoSize = False
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblCodigoSefaz: TLabel
+    Left = 97
+    Top = 272
+    Width = 42
+    Height = 23
+    Alignment = taCenter
+    Caption = '000'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblMensagemSefaz: TLabel
+    Left = 15
+    Top = 332
+    Width = 607
+    Height = 106
+    AutoSize = False
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+  object lblCodigoErro: TLabel
+    Left = 509
+    Top = 63
+    Width = 42
+    Height = 23
+    Alignment = taCenter
+    Caption = '000'
+    Color = clWhite
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clBlack
+    Font.Height = -19
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentColor = False
+    ParentFont = False
+    StyleElements = []
+  end
+end

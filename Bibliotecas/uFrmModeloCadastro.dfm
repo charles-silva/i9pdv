@@ -1,0 +1,71 @@
+object FrmModeloCadastro: TFrmModeloCadastro
+  Left = 0
+  Top = 0
+  HelpContext = 203
+  BorderStyle = bsSingle
+  Caption = 'Modelo'
+  ClientHeight = 596
+  ClientWidth = 1044
+  Color = clWhite
+  Font.Charset = ANSI_CHARSET
+  Font.Color = clWindowText
+  Font.Height = -11
+  Font.Name = 'MS Sans Serif'
+  Font.Style = []
+  KeyPreview = True
+  OldCreateOrder = False
+  Position = poDesigned
+  OnActivate = FormActivate
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnKeyDown = FormKeyDown
+  OnKeyPress = FormKeyPress
+  OnShow = FormShow
+  PixelsPerInch = 96
+  TextHeight = 13
+  object pnTopTitle: TPanel
+    Left = 0
+    Top = 0
+    Width = 1044
+    Height = 20
+    Align = alTop
+    BevelOuter = bvNone
+    Color = clNavy
+    ParentBackground = False
+    TabOrder = 0
+    object Label14: TLabel
+      Left = 105
+      Top = 84
+      Width = 66
+      Height = 23
+      Caption = 'Clientes'
+      Color = clWhite
+      Font.Charset = ANSI_CHARSET
+      Font.Color = 15461355
+      Font.Height = -19
+      Font.Name = 'Impact'
+      Font.Style = []
+      ParentColor = False
+      ParentFont = False
+      Transparent = True
+    end
+    object lblTitleTop: TLabel
+      AlignWithMargins = True
+      Left = 3
+      Top = 3
+      Width = 36
+      Height = 16
+      Align = alLeft
+      Caption = 'T'#237'tulo'
+      Color = clWhite
+      Font.Charset = ANSI_CHARSET
+      Font.Color = 15461355
+      Font.Height = -13
+      Font.Name = 'Arial Narrow'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = True
+    end
+  end
+end
