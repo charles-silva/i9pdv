@@ -34,7 +34,7 @@ uses
   Data.Win.ADODB, Vcl.Grids, Vcl.DBGrids, Vcl.Menus, cxButtons, dxDateRanges,
   dxScrollbarAnnotations, dxSkinDarkroom, dxSkinDarkSide,
   dxSkinDevExpressDarkStyle, cxGeometry, dxFramedControl, dxPanel,
-  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF,
+  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes,
   ACBrTEFComum;
 
 type
@@ -466,6 +466,7 @@ type
     TimerTEFContador: TTimer;
     fdqryImpressora: TFDQuery;
     ACBrPosPrinter1: TACBrPosPrinter;
+    lblTEFAviso: TLabel;
     procedure ACBrTEFAPI1QuandoExibirMensagem(const Mensagem: string; Terminal: TACBrTEFAPITela;
       MilissegundosExibicao: Integer);
     procedure ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF: TACBrTEFResp);
@@ -505,12 +506,10 @@ type
     goListReprintMode   : Boolean;
     goCNPJCPF, goNomeCli: String;
 
-    FFrmTEF                  : TFrmPDV_TEF;
-    FMensagemTEF             : String;
-    FContadorSegundosTEF     : Integer;
-    FContadorInicioTickTEF   : Cardinal;
-    FExibindoMensagemModalTEF: Boolean;
-    FProcessandoTEF          : Boolean;
+    FMensagemTEF          : String;
+    FContadorSegundosTEF  : Integer;
+    FContadorInicioTickTEF: Cardinal;
+    FProcessandoTEF       : Boolean;
 
     procedure doExecCommand;
     procedure doAddItemCancelList(AItem: Integer; AValor: Double);
@@ -529,8 +528,8 @@ type
     procedure IniciarContadorTEF;
     procedure FinalizarContadorTEF;
     procedure AtualizarContadorTEF;
+    procedure doTEFAtualizarAviso(const AMsg: String; AContador: Integer = 0);
     procedure doTEFExibirMensagem(const AMsg: String);
-    procedure doTEFExibirMensagemModal(const AMsg: String);
     procedure doTEFConsultar;
   protected
     { Private declarations }
@@ -3784,9 +3783,6 @@ begin
   if not goTerminal.pterm_tef then
     exit;
 
-  FFrmTEF := TFrmPDV_TEF.Create(self);
-  FFrmTEF.Exibir(attmShow);
-
   doTEFConsultar;
 end;
 
@@ -3865,8 +3861,7 @@ begin
   // Reenvia a mensagem atual com contador = 0, para que o sufixo "[N]" que
   // possa ter sido exibido junto com a mensagem final n�o fique "grudado"
   // na tela depois que o processo j� terminou.
-  if Assigned(FFrmTEF) then
-    FFrmTEF.doLog(FMensagemTEF, 0);
+  doTEFAtualizarAviso(FMensagemTEF, 0);
 end;
 
 // Baseado no tempo real decorrido (GetTickCount) em vez de contar "ticks" do
@@ -3889,11 +3884,23 @@ begin
     FContadorSegundosTEF := vRestante;
 end;
 
-// Envia a mensagem e o valor atual do contador para o TFrmPDV_TEF, que decide
-// como exibir (o apresentador esconde o sufixo "[N]" quando o valor for 0).
-// Toda a regra de consulta (texto + quando/quanto contar) vive aqui.
-// Auto-sincroniza com a main thread, pois � chamada diretamente de dentro da
-// thread de trabalho (AtivarTEF, callbacks do ACBrTEFAPI1, tratamento de erro).
+// Escreve a mensagem (com o sufixo "[N]" do contador, quando AContador <> 0)
+// diretamente no lblTEFAviso da tela principal do PDV. S� deve ser chamada
+// j� na main thread (ver doTEFExibirMensagem/FinalizarContadorTEF).
+procedure TFrmPDV.doTEFAtualizarAviso(const AMsg: String; AContador: Integer);
+begin
+  if AContador = 0 then
+    lblTEFAviso.Caption := AMsg
+  else
+    lblTEFAviso.Caption := AMsg + ' [' + AContador.ToString + ']';
+  lblTEFAviso.Repaint;
+end;
+
+// Atualiza o lblTEFAviso com a mensagem e o valor atual do contador (o
+// sufixo "[N]" some quando o valor for 0). Toda a regra de consulta (texto +
+// quando/quanto contar) vive aqui. Auto-sincroniza com a main thread, pois �
+// chamada diretamente de dentro da thread de trabalho (AtivarTEF, callbacks
+// do ACBrTEFAPI1, tratamento de erro).
 procedure TFrmPDV.doTEFExibirMensagem(const AMsg: String);
 begin
   if TThread.CurrentThread.ThreadID <> MainThreadID then
@@ -3909,59 +3916,16 @@ begin
   FMensagemTEF := AMsg;
   AtualizarContadorTEF;
 
-  if not Assigned(FFrmTEF) then
-    exit;
-
-  // Enquanto uma mensagem modal (ACBrTEFAPI1QuandoExibirMensagem) est�
-  // aguardando a��o do usu�rio, o TimerTEFContador continua disparando (o
-  // loop interno do ShowModal, rodando na main thread, ainda bombeia
-  // WM_TIMER de outros formul�rios). Sem essa guarda, cada tick reescreveria
-  // lblStatus com o FMensagemTEF antigo + contador, cobrindo a mensagem
-  // modal antes que o usu�rio consiga l�-la.
-  if FExibindoMensagemModalTEF then
-    exit;
-
   if TimerTEFContador.Enabled then
-    FFrmTEF.doLog(FMensagemTEF, FContadorSegundosTEF)
+    doTEFAtualizarAviso(FMensagemTEF, FContadorSegundosTEF)
   else
-    FFrmTEF.doLog(FMensagemTEF, 0);
-end;
-
-// Mensagens vindas de ACBrTEFAPI1QuandoExibirMensagem exigem uma a��o do
-// usu�rio (ex.: durante uma transa��o de cart�o), por isso s�o exibidas no
-// modo ShowModal (ver TFrmPDV_TEF.Exibir), bloqueando at� o usu�rio
-// confirmar (ESC/Enter). Auto-sincroniza com a main thread, pois
-// QuandoExibirMensagem � chamado a partir da thread de trabalho do
-// ACBrTEFAPI1 (ver doTEFConsultar).
-procedure TFrmPDV.doTEFExibirMensagemModal(const AMsg: String);
-begin
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        doTEFExibirMensagemModal(AMsg);
-      end);
-    exit;
-  end;
-
-  if not Assigned(FFrmTEF) then
-    exit;
-
-  FExibindoMensagemModalTEF := true;
-  try
-    FFrmTEF.doLog(AMsg, 0);
-    FFrmTEF.Exibir(attmShowModal);
-  finally
-    FExibindoMensagemModalTEF := false;
-  end;
+    doTEFAtualizarAviso(FMensagemTEF, 0);
 end;
 
 procedure TFrmPDV.TimerTEFContadorTimer(Sender: TObject);
 begin
   AtualizarContadorTEF;
-  if Assigned(FFrmTEF) then
-    doTEFExibirMensagem(FMensagemTEF);
+  doTEFExibirMensagem(FMensagemTEF);
 end;
 
 procedure TFrmPDV.ACBrTEFAPI1QuandoExibirMensagem(const Mensagem: string; Terminal: TACBrTEFAPITela;
@@ -3970,14 +3934,7 @@ begin
   if (Mensagem = '') then
     exit;
 
-  // Mensagens puramente informativas (ex.: "Aguarde...", "Conectado") n�o
-  // exigem a��o do usu�rio -- devem apenas atualizar o status e sumir
-  // sozinhas quando a pr�xima mensagem chegar ou o processo terminar, sem
-  // travar a tela em modo modal.
-  if ContainsText(Mensagem, 'aguarde') or ContainsText(Mensagem, 'conectando') then
-    doTEFExibirMensagem(Mensagem)
-  else
-    doTEFExibirMensagemModal(Mensagem);
+  doTEFExibirMensagem(Mensagem);
 end;
 
 procedure TFrmPDV.ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF: TACBrTEFResp);
@@ -4005,11 +3962,11 @@ begin
     ItemSelecionado := -1;
     exit;
   end;
-  if (Opcoes.Count = 2) then
-  begin
-    ItemSelecionado := 0;
-    exit;
-  end;
+//  if (Opcoes.Count = 2) then
+//  begin
+//    ItemSelecionado := 0;
+//    exit;
+//  end;
 
   FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
   try
@@ -4042,32 +3999,23 @@ begin
 
   // AtivarTEF/EfetuarAdministrativa s�o chamadas s�ncronas/bloqueantes; rodando
   // numa thread separada a main thread (e sua fila de mensagens) fica livre.
-  // FFrmTEF.doLog/PermitirFechar se auto-sincronizam com a main thread.
+  // doTEFExibirMensagem se auto-sincroniza com a main thread.
   vThread := TThread.CreateAnonymousThread(
     procedure
     begin
       try
-        try
-          AtivarTEF;
-          ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
-          if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
-            doTEFExibirMensagem('TEF iniciado com sucesso.')
-          else
-          begin
-            if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
-              doTEFExibirMensagem('Erro ao iniciar TEF');
-          end;
-        finally
-          if Assigned(FFrmTEF) then
-            FFrmTEF.PermitirFechar;
+        AtivarTEF;
+        ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
+        if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
+          doTEFExibirMensagem('TEF iniciado com sucesso.')
+        else
+        begin
+          if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
+            doTEFExibirMensagem('Erro ao iniciar TEF');
         end;
       except
         on e: exception do
-        begin
           doTEFExibirMensagem('Falha ao ativar TEF' + sLineBreak + e.Message);
-          if Assigned(FFrmTEF) then
-            FFrmTEF.PermitirFechar;
-        end;
       end;
 
       FinalizarContadorTEF;
@@ -4077,17 +4025,11 @@ begin
 end;
 
 // Efetua a cobran�a em cart�o (d�bito/cr�dito � vista) no PinPad via
-// ACBrTEFAPI1.EfetuarPagamento, reaproveitando FFrmTEF (a mesma tela usada
-// pela ativa��o) s� em modo n�o-modal (attmShow) para mostrar o andamento.
-// N�o usa ShowModal pra bloquear porque mensagens informativas do TEF, que
-// chegam durante a transa��o via ACBrTEFAPI1QuandoExibirMensagem, j� abrem
-// um ShowModal pr�prio (doTEFExibirMensagemModal) na MESMA inst�ncia de
-// FFrmTEF; nest-lo dentro de outro ShowModal da mesma inst�ncia n�o �
-// permitido pela VCL. Em vez disso, bloqueia a thread chamadora (a main
-// thread, chamada a partir de doConfirmaPagamento) com um la�o de
-// Application.ProcessMessages -- mesmo padr�o j� usado em
-// TFrmPDV_TEF.TimerSairTimer -- que continua bombeando as mensagens
-// necess�rias pro TThread.Synchronize da thread de trabalho funcionar.
+// ACBrTEFAPI1.EfetuarPagamento, mostrando o andamento em lblTEFAviso.
+// Bloqueia a thread chamadora (a main thread, chamada a partir de
+// doConfirmaPagamento) com um la�o de Application.ProcessMessages, que
+// continua bombeando as mensagens necess�rias pro TThread.Synchronize da
+// thread de trabalho funcionar.
 function TFrmPDV.EfetuarPagamentoTEF(const ANumeroFiscal: String; AValor: Currency; ACartaoDebito: Boolean): Boolean;
 var
   vThread        : TThread;
@@ -4095,7 +4037,7 @@ var
   vConcluido, vOk: Boolean;
 begin
   result := false;
-  if not Assigned(FFrmTEF) or FProcessandoTEF then
+  if FProcessandoTEF then
     exit;
 
   if ACartaoDebito then
@@ -4108,7 +4050,6 @@ begin
   vOk                  := false;
   edValorForma.Enabled := false;
   try
-    FFrmTEF.Exibir(attmShow);
     doTEFExibirMensagem('Processando pagamento...');
 
     vThread := TThread.CreateAnonymousThread(
@@ -4137,7 +4078,6 @@ begin
       doTEFExibirMensagem('Pagamento aprovado.')
     else
       doTEFExibirMensagem('Pagamento n�o aprovado.');
-    FFrmTEF.Hide;
   finally
     edValorForma.Enabled := true;
     FProcessandoTEF      := false;

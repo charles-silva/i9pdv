@@ -87663,6 +87663,7 @@ object FrmPDV: TFrmPDV
             OptionsData.Editing = False
             OptionsData.Inserting = False
             OptionsSelection.CellSelect = False
+            OptionsView.NoDataToDisplayInfoText = '< Sem itens no momento >'
             OptionsView.ExpandButtonsForEmptyDetails = False
             OptionsView.GridLineColor = clNone
             OptionsView.GridLines = glNone
