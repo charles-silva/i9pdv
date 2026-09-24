@@ -64,7 +64,6 @@ type
     procedure doLog(ALog: String);
     procedure GerarNFCe(Apnf_id: Integer; AModoOffLine: Boolean);
     function doEnviarNFCe(Apnf_id: Integer; AOffline: Boolean): Boolean;
-    procedure doSetConfigNFCe;
     procedure UpdateRejeicao(anf_id: Integer; aMsg: string; AOffline: Boolean = false);
     procedure UpdateNfeCancelamento(Apnf_id: Integer; ProtCancelamento: string; DataCancelamento: TDateTime;
       Motivo: string);
@@ -84,6 +83,7 @@ type
     goPathNFe, goImpressora: String;
     goContigencia          : Boolean;
     goOffLine, goCancelMode: Boolean;
+    procedure doSetConfigNFCe;
   end;
 
 var
@@ -1001,10 +1001,6 @@ end;
 
 procedure TFrmPDV_NFCe.FormShow(Sender: TObject);
 begin
-  DanfeFR.FastFile       := PathWithDelim(ExtractFilePath(Application.ExeName)) + 'Report\DANFeNFCe.fr3';
-  DanfeFR.TipoDANFE      := tiNFCe;
-  DanfeFR.FastFileEvento := ExtractFilePath(Application.ExeName) + 'report\EventosNFCe.fr3';
-  DanfeFR.Impressora     := goImpressora;
   doSetConfigNFCe;
   Timer1.Enabled      := true;
   Shape16.Brush.Color := FrmPDV.CordoMes.Color;
@@ -1065,6 +1061,12 @@ var
   // LCertificado: ICertificate2;
   LEmpresa: String;
 begin
+
+  DanfeFR.FastFile       := PathWithDelim(ExtractFilePath(Application.ExeName)) + 'Report\DANFeNFCe.fr3';
+  DanfeFR.TipoDANFE      := tiNFCe;
+  DanfeFR.FastFileEvento := ExtractFilePath(Application.ExeName) + 'report\EventosNFCe.fr3';
+  DanfeFR.Impressora     := goImpressora;
+
   ACBrNFe.Destroy;
   ACBrNFe := TACBrNFe.Create(self);
   FForm   := TFrmConfig_NFCe.Create(Application);

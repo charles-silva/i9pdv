@@ -316,9 +316,9 @@ object FrmConfig_Terminais: TFrmConfig_Terminais
     Tag = 2
     Left = 16
     Top = 287
-    Width = 48
+    Width = 71
     Height = 16
-    Caption = 'QrCode'
+    Caption = 'Pix QrCode'
     FocusControl = edpterm_pos_chave_validador
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText

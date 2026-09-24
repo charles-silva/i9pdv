@@ -6,7 +6,7 @@ object FrmPDV: TFrmPDV
   BorderStyle = bsNone
   Caption = 'PDV'
   ClientHeight = 768
-  ClientWidth = 1360
+  ClientWidth = 1497
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -25,7 +25,7 @@ object FrmPDV: TFrmPDV
   OnShow = FormShow
   TextHeight = 13
   object Shape12: TShape
-    Left = 7
+    Left = 5
     Top = 698
     Width = 1115
     Height = 65
@@ -39,9 +39,9 @@ object FrmPDV: TFrmPDV
     Shape = stRoundRect
   end
   object Shape28: TShape
-    Left = 660
+    Left = 645
     Top = 708
-    Width = 452
+    Width = 464
     Height = 44
     Pen.Color = 10725123
     Shape = stRoundRect
@@ -230,7 +230,7 @@ object FrmPDV: TFrmPDV
   end
   object lblDataAbertura: TLabel
     Left = 94
-    Top = 738
+    Top = 743
     Width = 140
     Height = 13
     Caption = '00/00/0000 00:00:00'
@@ -244,7 +244,7 @@ object FrmPDV: TFrmPDV
   end
   object Label14: TLabel
     Left = 33
-    Top = 736
+    Top = 741
     Width = 55
     Height = 13
     Caption = 'Abertura:'
@@ -258,7 +258,7 @@ object FrmPDV: TFrmPDV
   end
   object lblSequencial: TLabel
     Left = 93
-    Top = 700
+    Top = 705
     Width = 48
     Height = 13
     Alignment = taRightJustify
@@ -273,7 +273,7 @@ object FrmPDV: TFrmPDV
   end
   object Label16: TLabel
     Left = 18
-    Top = 700
+    Top = 705
     Width = 70
     Height = 13
     Alignment = taRightJustify
@@ -288,7 +288,7 @@ object FrmPDV: TFrmPDV
   end
   object lblLastSync: TLabel
     Left = 94
-    Top = 719
+    Top = 724
     Width = 140
     Height = 13
     Caption = '00/00/0000 00:00:00'
@@ -302,7 +302,7 @@ object FrmPDV: TFrmPDV
   end
   object Label4: TLabel
     Left = 46
-    Top = 717
+    Top = 722
     Width = 42
     Height = 13
     Caption = 'Avisos:'
@@ -502,7 +502,7 @@ object FrmPDV: TFrmPDV
     StyleElements = []
   end
   object lblKeyProduto: TLabel
-    Left = 302
+    Left = 286
     Top = 721
     Width = 132
     Height = 13
@@ -519,7 +519,7 @@ object FrmPDV: TFrmPDV
     StyleElements = []
   end
   object lblKeyExcItem: TLabel
-    Left = 302
+    Left = 286
     Top = 739
     Width = 122
     Height = 13
@@ -536,7 +536,7 @@ object FrmPDV: TFrmPDV
     StyleElements = []
   end
   object lblKeyLimparPedido: TLabel
-    Left = 482
+    Left = 466
     Top = 704
     Width = 135
     Height = 13
@@ -553,11 +553,11 @@ object FrmPDV: TFrmPDV
     StyleElements = []
   end
   object lblKeyVenda: TLabel
-    Left = 482
+    Left = 466
     Top = 721
-    Width = 82
+    Width = 143
     Height = 13
-    Caption = '[F6] - Venda'
+    Caption = '[F6] - Finalizar Venda'
     Color = 5986569
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWhite
@@ -570,7 +570,7 @@ object FrmPDV: TFrmPDV
     StyleElements = []
   end
   object lblKeyPreco: TLabel
-    Left = 302
+    Left = 286
     Top = 704
     Width = 118
     Height = 13
@@ -589,7 +589,7 @@ object FrmPDV: TFrmPDV
   object lblTEFAviso: TLabel
     Left = 664
     Top = 720
-    Width = 440
+    Width = 436
     Height = 23
     Alignment = taRightJustify
     AutoSize = False
@@ -85989,7 +85989,7 @@ object FrmPDV: TFrmPDV
         Shape = stRoundRect
       end
       object shp6: TShape
-        Left = 10
+        Left = 5
         Top = 495
         Width = 167
         Height = 70
@@ -87761,8 +87761,8 @@ object FrmPDV: TFrmPDV
         end
       end
       object Memo1: TMemo
-        Left = 266
-        Top = 193
+        Left = 23
+        Top = 410
         Width = 186
         Height = 24
         Lines.Strings = (
@@ -89094,7 +89094,7 @@ object FrmPDV: TFrmPDV
       end
     end
     object cxTabSheet5: TcxTabSheet
-      Caption = 'cxTabSheet5'
+      Caption = 'Impress'#245'es'
       ImageIndex = 4
       DesignSize = (
         1105
@@ -89111,13 +89111,11 @@ object FrmPDV: TFrmPDV
         Margins.Bottom = 0
         Align = alClient
         Brush.Style = bsClear
-        Pen.Color = 11383299
-        ExplicitTop = 23
-        ExplicitWidth = 979
-        ExplicitHeight = 573
+        Pen.Color = clWhite
+        ExplicitTop = 16
       end
       object lblCancelReprintMsg: TLabel
-        Left = 23
+        Left = 29
         Top = 539
         Width = 683
         Height = 16
@@ -89132,22 +89130,21 @@ object FrmPDV: TFrmPDV
         Font.Style = []
         ParentFont = False
         StyleElements = []
-        ExplicitTop = 571
       end
       object Shape7: TShape
         AlignWithMargins = True
-        Left = 10
+        Left = 0
         Top = 0
-        Width = 1095
+        Width = 1105
         Height = 24
-        Margins.Left = 10
+        Margins.Left = 0
         Margins.Top = 0
         Margins.Right = 0
         Margins.Bottom = 0
         Align = alTop
         Brush.Color = 5986569
-        ExplicitTop = 4
-        ExplicitWidth = 979
+        ExplicitLeft = 4
+        ExplicitWidth = 1101
       end
       object lblCancelReprint: TLabel
         Left = 15
@@ -89179,12 +89176,12 @@ object FrmPDV: TFrmPDV
         ParentFont = False
         StyleElements = []
       end
-      object cxGrid1: TcxGrid
+      object cxgrdReimpressao: TcxGrid
         AlignWithMargins = True
-        Left = 31
-        Top = 51
+        Left = 28
+        Top = 53
         Width = 950
-        Height = 342
+        Height = 476
         Margins.Left = 10
         Margins.Top = 1
         Margins.Right = 0
@@ -89197,7 +89194,7 @@ object FrmPDV: TFrmPDV
         ParentFont = False
         TabOrder = 0
         LookAndFeel.SkinName = 'Whiteprint'
-        object cxGrid1DBTableView1: TcxGridDBTableView
+        object cxgrdReimpressaoDBTableView1: TcxGridDBTableView
           Navigator.Buttons.CustomButtons = <>
           ScrollbarAnnotations.CustomAnnotations = <>
           DataController.DataSource = FrmPDV_DModule_DS.doNotas
@@ -89205,11 +89202,11 @@ object FrmPDV: TFrmPDV
           DataController.Summary.FooterSummaryItems = <
             item
               Format = ',0.00;-,0.00'
-              Column = cxGrid1DBTableView1pnf_total_nota
+              Column = cxgrdReimpressaoDBTableView1pnf_total_nota
             end
             item
               Kind = skCount
-              Column = cxGrid1DBTableView1pnf_id
+              Column = cxgrdReimpressaoDBTableView1pnf_id
             end>
           DataController.Summary.SummaryGroups = <>
           OptionsData.CancelOnExit = False
@@ -89224,27 +89221,27 @@ object FrmPDV: TFrmPDV
           OptionsView.Indicator = True
           Styles.OnGetContentStyle = cxGrid1DBTableView1StylesGetContentStyle
           Styles.Header = cxStyle2
-          object cxGrid1DBTableView1pnf_status: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_status: TcxGridDBColumn
             DataBinding.FieldName = 'pnf_status'
             DataBinding.IsNullValueType = True
             Visible = False
             VisibleForCustomization = False
           end
-          object cxGrid1DBTableView1pnf_status_str: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_status_str: TcxGridDBColumn
             Caption = 'Situa'#231#227'o'
             DataBinding.FieldName = 'pnf_status_str'
             DataBinding.IsNullValueType = True
             Options.AutoWidthSizable = False
             Width = 90
           end
-          object cxGrid1DBTableView1pnf_id: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_id: TcxGridDBColumn
             Caption = 'ID Venda'
             DataBinding.FieldName = 'pnf_id'
             DataBinding.IsNullValueType = True
             Options.AutoWidthSizable = False
             Width = 65
           end
-          object cxGrid1DBTableView1pnf_serie: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_serie: TcxGridDBColumn
             Caption = 'S'#233'rie'
             DataBinding.FieldName = 'pnf_serie'
             DataBinding.IsNullValueType = True
@@ -89256,21 +89253,21 @@ object FrmPDV: TFrmPDV
             Options.AutoWidthSizable = False
             Width = 37
           end
-          object cxGrid1DBTableView1pnf_numero_fiscal: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_numero_fiscal: TcxGridDBColumn
             Caption = 'N'#186' Fiscal'
             DataBinding.FieldName = 'pnf_numero_fiscal'
             DataBinding.IsNullValueType = True
             Options.AutoWidthSizable = False
             Width = 65
           end
-          object cxGrid1DBTableView1pnf_data_emissao: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_data_emissao: TcxGridDBColumn
             Caption = 'Data Emiss'#227'o'
             DataBinding.FieldName = 'pnf_data_autorizacao'
             DataBinding.IsNullValueType = True
             Options.AutoWidthSizable = False
             Width = 129
           end
-          object cxGrid1DBTableView1pnf_data_autorizacao: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_data_autorizacao: TcxGridDBColumn
             Caption = 'Data Autoriza'#231#227'o'
             DataBinding.FieldName = 'pnf_data_autorizacao'
             DataBinding.IsNullValueType = True
@@ -89279,7 +89276,7 @@ object FrmPDV: TFrmPDV
             VisibleForCustomization = False
             Width = 142
           end
-          object cxGrid1DBTableView1pnf_volumes: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_volumes: TcxGridDBColumn
             Caption = 'Volumes'
             DataBinding.FieldName = 'pnf_volumes'
             DataBinding.IsNullValueType = True
@@ -89291,7 +89288,7 @@ object FrmPDV: TFrmPDV
             Options.AutoWidthSizable = False
             Width = 57
           end
-          object cxGrid1DBTableView1pnf_total_nota: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_total_nota: TcxGridDBColumn
             Caption = 'Total'
             DataBinding.FieldName = 'pnf_total_nota'
             DataBinding.IsNullValueType = True
@@ -89302,20 +89299,20 @@ object FrmPDV: TFrmPDV
             Options.AutoWidthSizable = False
             Width = 89
           end
-          object cxGrid1DBTableView1en_cnpjcpf: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1en_cnpjcpf: TcxGridDBColumn
             Caption = 'CNPJ / CPF'
             DataBinding.FieldName = 'en_cnpjcpf'
             DataBinding.IsNullValueType = True
             Options.AutoWidthSizable = False
             Width = 73
           end
-          object cxGrid1DBTableView1en_nome_completo: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1en_nome_completo: TcxGridDBColumn
             Caption = 'Nome Completo do Cliente'
             DataBinding.FieldName = 'en_nome_completo'
             DataBinding.IsNullValueType = True
             Width = 263
           end
-          object cxGrid1DBTableView1pnf_sat: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_sat: TcxGridDBColumn
             Caption = 'SAT'
             DataBinding.FieldName = 'pnf_sat'
             DataBinding.IsNullValueType = True
@@ -89328,7 +89325,7 @@ object FrmPDV: TFrmPDV
             Options.AutoWidthSizable = False
             Width = 33
           end
-          object cxGrid1DBTableView1pnf_nfce: TcxGridDBColumn
+          object cxgrdReimpressaoDBTableView1pnf_nfce: TcxGridDBColumn
             Caption = 'NFCE'
             DataBinding.FieldName = 'pnf_nfce'
             DataBinding.IsNullValueType = True
@@ -89342,13 +89339,13 @@ object FrmPDV: TFrmPDV
             Width = 35
           end
         end
-        object cxGrid1Level1: TcxGridLevel
-          GridView = cxGrid1DBTableView1
+        object cxgrdReimpressaoLevel1: TcxGridLevel
+          GridView = cxgrdReimpressaoDBTableView1
         end
       end
       object edpnf_motivo_rejeicao: TcxDBMemo
-        Left = 23
-        Top = 396
+        Left = 164
+        Top = 351
         TabStop = False
         DataBinding.DataField = 'pnf_motivo_rejeicao'
         Properties.ReadOnly = True
@@ -89358,7 +89355,7 @@ object FrmPDV: TFrmPDV
         StyleHot.LookAndFeel.SkinName = 'Blue'
         TabOrder = 1
         Visible = False
-        Height = 169
+        Height = 70
         Width = 950
       end
       object dtDataVenda: TDateTimePicker
@@ -90272,8 +90269,8 @@ object FrmPDV: TFrmPDV
     Visible = False
   end
   object edtcodusuario: TEdit
-    Left = 1061
-    Top = 129
+    Left = 1015
+    Top = 193
     Width = 60
     Height = 21
     TabOrder = 9
@@ -90284,14 +90281,14 @@ object FrmPDV: TFrmPDV
     Interval = 500
     OnTimer = Timer1Timer
     Left = 528
-    Top = 116
+    Top = 196
   end
   object TimerShow: TTimer
     Enabled = False
     Interval = 500
     OnTimer = TimerShowTimer
-    Left = 176
-    Top = 116
+    Left = 168
+    Top = 244
   end
   object cxStyleRepository1: TcxStyleRepository
     Left = 848
@@ -90356,8 +90353,8 @@ object FrmPDV: TFrmPDV
     FetchOptions.AutoClose = False
     SQL.Strings = (
       'SELECT  GETDATE() AS ServerDate')
-    Left = 448
-    Top = 123
+    Left = 528
+    Top = 307
   end
   object ACBrBAL1: TACBrBAL
     Porta = 'COM1'
@@ -90396,8 +90393,8 @@ object FrmPDV: TFrmPDV
     UpdateOptions.CheckRequired = False
     UpdateOptions.AutoCommitUpdates = True
     StoreDefs = True
-    Left = 544
-    Top = 64
+    Left = 528
+    Top = 248
     object fdMemTbItensItem: TIntegerField
       FieldName = 'Item'
     end
@@ -90844,10 +90841,15 @@ object FrmPDV: TFrmPDV
     DadosAutomacao.AutoAtendimento = False
     DadosTerminal.Ambiente = ambNaoDefinido
     DadosTerminal.GravarLogTEF = False
+    QuandoGravarLog = ACBrTEFAPI1QuandoGravarLog
     QuandoFinalizarOperacao = ACBrTEFAPI1QuandoFinalizarOperacao
+    QuandoFinalizarTransacao = ACBrTEFAPI1QuandoFinalizarTransacao
+    QuandoDetectarTransacaoPendente = ACBrTEFAPI1QuandoDetectarTransacaoPendente
+    QuandoEsperarOperacao = ACBrTEFAPI1QuandoEsperarOperacao
     QuandoExibirMensagem = ACBrTEFAPI1QuandoExibirMensagem
     QuandoPerguntarMenu = ACBrTEFAPI1QuandoPerguntarMenu
     QuandoPerguntarCampo = ACBrTEFAPI1QuandoPerguntarCampo
+    QuandoExibirQRCode = ACBrTEFAPI1QuandoExibirQRCode
     Left = 64
     Top = 240
   end

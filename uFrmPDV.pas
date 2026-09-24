@@ -34,7 +34,7 @@ uses
   Data.Win.ADODB, Vcl.Grids, Vcl.DBGrids, Vcl.Menus, cxButtons, dxDateRanges,
   dxScrollbarAnnotations, dxSkinDarkroom, dxSkinDarkSide,
   dxSkinDevExpressDarkStyle, cxGeometry, dxFramedControl, dxPanel,
-  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes,
+  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF_QRCode, uFrmPDV_TEF_Campo,
   ACBrTEFComum;
 
 type
@@ -166,25 +166,25 @@ type
     Label34: TLabel;
     lblUnidadeProd: TLabel;
     cxTabSheet5: TcxTabSheet;
-    cxGrid1DBTableView1: TcxGridDBTableView;
-    cxGrid1Level1: TcxGridLevel;
-    cxGrid1: TcxGrid;
-    cxGrid1DBTableView1pnf_id: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_serie: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_numero_fiscal: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_data_emissao: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_volumes: TcxGridDBColumn;
-    cxGrid1DBTableView1en_cnpjcpf: TcxGridDBColumn;
-    cxGrid1DBTableView1en_nome_completo: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_total_nota: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1: TcxGridDBTableView;
+    cxgrdReimpressaoLevel1: TcxGridLevel;
+    cxgrdReimpressao: TcxGrid;
+    cxgrdReimpressaoDBTableView1pnf_id: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_serie: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_numero_fiscal: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_data_emissao: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_volumes: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1en_cnpjcpf: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1en_nome_completo: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_total_nota: TcxGridDBColumn;
     lblCancelReprintMsg: TLabel;
     Shape7: TShape;
     lblCancelReprint: TLabel;
-    cxGrid1DBTableView1pnf_status_str: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_data_autorizacao: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_status_str: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_data_autorizacao: TcxGridDBColumn;
     Shape5: TShape;
     Label41: TLabel;
-    cxGrid1DBTableView1pnf_status: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_status: TcxGridDBColumn;
     Cancelado: TcxStyle;
     Enviado: TcxStyle;
     NaoEnviado: TcxStyle;
@@ -220,8 +220,8 @@ type
     Shape13: TShape;
     Label48: TLabel;
     ACBrBAL1: TACBrBAL;
-    cxGrid1DBTableView1pnf_sat: TcxGridDBColumn;
-    cxGrid1DBTableView1pnf_nfce: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_sat: TcxGridDBColumn;
+    cxgrdReimpressaoDBTableView1pnf_nfce: TcxGridDBColumn;
     cxGridDBTableView3us_apelido: TcxGridDBColumn;
     Image2: TImage;
     Label39: TLabel;
@@ -496,9 +496,13 @@ type
     procedure cxTabSheet2Show(Sender: TObject);
     procedure cxButton2Click(Sender: TObject);
     procedure AdvGlowButton4Click(Sender: TObject);
-    procedure ACBrTEFAPI1QuandoPerguntarCampo(
-      DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string;
+    procedure ACBrTEFAPI1QuandoPerguntarCampo(DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string;
       var Validado, Cancelado: Boolean);
+    procedure ACBrTEFAPI1QuandoGravarLog(const ALogLine: String; var Tratado: Boolean);
+    procedure ACBrTEFAPI1QuandoFinalizarTransacao(RespostaTEF: TACBrTEFResp; AStatus: TACBrTEFStatusTransacao);
+    procedure ACBrTEFAPI1QuandoDetectarTransacaoPendente(RespostaTEF: TACBrTEFResp; const MsgErro: String);
+    procedure ACBrTEFAPI1QuandoEsperarOperacao(OperacaoAPI: TACBrTEFAPIOperacaoAPI; var Cancelar: Boolean);
+    procedure ACBrTEFAPI1QuandoExibirQRCode(const DadosQRCode: String);
 
   private
     goListResendMode    : Boolean;
@@ -510,6 +514,8 @@ type
     FContadorSegundosTEF  : Integer;
     FContadorInicioTickTEF: Cardinal;
     FProcessandoTEF       : Boolean;
+    FCancelarTEF          : Boolean;
+    FFrmTEFQRCode         : TFrmPDV_TEF_QRCode;
 
     procedure doExecCommand;
     procedure doAddItemCancelList(AItem: Integer; AValor: Double);
@@ -690,6 +696,15 @@ var
   loCancelCFe: TSendRetorno;
   loFileStr  : TStrings;
 begin
+  // Enquanto uma opera��o TEF est� em andamento (ativa��o ou pagamento), ESC
+  // cancela em vez de navegar entre p�ginas -- ver ACBrTEFAPI1QuandoEsperarOperacao.
+  if FProcessandoTEF and (Key = VK_ESCAPE) then
+  begin
+    FCancelarTEF := true;
+    Key          := 0;
+    exit;
+  end;
+
   if FrmPDV_DModule_DS.dsTeclas.active and (not(Key in [13, 37, 38, 39, 40])) then
     if FrmPDV_DModule_DS.dsTeclas.Locate('ptc_key', Key, [loCaseInsensitive]) then
     begin
@@ -794,6 +809,7 @@ begin
                 FrmPDV_NFCe.ACBrNFe.DANFE.Impressora := goTerminal.Impressora.pimp_impressora;
                 FrmPDV_NFCe.ACBrNFe.NotasFiscais.Clear;
                 FrmPDV_NFCe.goContigencia := false;
+                FrmPDV_NFCe.doSetConfigNFCe;
                 FrmPDV_NFCe.ACBrNFe.NotasFiscais.LoadFromString(FrmPDV_DModule_DS.fdNotas.FieldByName('pnf_xml')
                   .AsString);
                 doPrintNFCe;
@@ -1041,7 +1057,16 @@ begin
             doSetModoConsultaPreco(true);
           Key := 0;
         end;
-
+      VK_F2:
+        doExecFunction('206');
+      VK_F3:
+        doExecFunction('210');
+      VK_F4:
+        doExecFunction('205');
+      VK_F5:
+        doExecFunction('202');
+      VK_F6:
+        doExecFunction('201');
     end;
   end;
 end;
@@ -3276,9 +3301,9 @@ procedure TFrmPDV.cxButton2Click(Sender: TObject);
 begin
 
   if goListResendMode then
-    cxGrid1.Height := 340
+    cxgrdReimpressao.Height := 340
   else
-    cxGrid1.Height := 513;
+    cxgrdReimpressao.Height := 746;
 
   FrmPDV_DModule_DS.fdNotas.close;
   FrmPDV_DModule_DS.fdNotas.ParamByName('em_codigo').AsInteger := ServerEmpresa;
@@ -3295,13 +3320,13 @@ begin
     exit;
 
   try
-    if ARecord.Values[cxGrid1DBTableView1pnf_status.index] = 6 then
+    if ARecord.Values[cxgrdReimpressaoDBTableView1pnf_status.index] = 6 then
       AStyle := Cancelado;
-    if (ARecord.Values[cxGrid1DBTableView1pnf_status.index] = 3) or
-      (ARecord.Values[cxGrid1DBTableView1pnf_status.index] = 4) then
+    if (ARecord.Values[cxgrdReimpressaoDBTableView1pnf_status.index] = 3) or
+      (ARecord.Values[cxgrdReimpressaoDBTableView1pnf_status.index] = 4) then
       AStyle := Enviado;
-    if (ARecord.Values[cxGrid1DBTableView1pnf_status.index] = 1) or
-      (ARecord.Values[cxGrid1DBTableView1pnf_status.index] = 2) then
+    if (ARecord.Values[cxgrdReimpressaoDBTableView1pnf_status.index] = 1) or
+      (ARecord.Values[cxgrdReimpressaoDBTableView1pnf_status.index] = 2) then
       AStyle := NaoEnviado;
   except
 
@@ -3345,12 +3370,12 @@ begin
     if goListResendMode then
     begin
       sqlCmd         := sqlContigencia;
-      cxGrid1.Height := 340;
+      cxgrdReimpressao.Height := 340;
     end
     else
     begin
       sqlCmd         := sqlVendasDia;
-      cxGrid1.Height := 513;
+      cxgrdReimpressao.Height := 476;
     end;
 
     FrmPDV_DModule_DS.fdNotas.close;
@@ -3360,7 +3385,7 @@ begin
     // FrmPDV_DModule_DS.fdNotas.ParamByName('pnf_offline').AsBoolean := goListResendMode;
     FrmPDV_DModule_DS.fdNotas.ParamByName('data_emissao').AsDate := Trunc(dtDataVenda.date);
     FrmPDV_DModule_DS.fdNotas.active                             := true;
-    cxGrid1.Setfocus;
+    cxgrdReimpressao.Setfocus;
   end;
 end;
 
@@ -3941,54 +3966,262 @@ procedure TFrmPDV.ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF: TACBrTEFResp);
 var
   MsgFinal: String;
 begin
+  if TThread.CurrentThread.ThreadID <> MainThreadID then
+  begin
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF);
+      end);
+    exit;
+  end;
+
   MsgFinal := RespostaTEF.TextoEspecialOperador;
+
+  // Garante que a tela do QR Code do Pix n�o fique presa na tela, caso o TEF
+  // n�o tenha enviado um QuandoExibirQRCode('') ao concluir a opera��o.
+  FreeAndNil(FFrmTEFQRCode);
 end;
 
-procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarCampo(
-  DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string; var Validado,
-  Cancelado: Boolean);
+// Pergunta ao operador um campo pedido pelo pr�prio TEF durante a transa��o
+// (ex.: quantidade de parcelas, ap�s ACBrTEFAPI1QuandoPerguntarMenu perguntar
+// se � � vista/parcelado). Validado := False deixa o pr�prio ACBrTEFAPI
+// validar o conte�do (DefinicaoCampo.ValidacaoDado), como no demo oficial.
+// Mesma thread de trabalho de QuandoPerguntarMenu -- precisa sincronizar
+// com a main thread antes de mexer em VCL.
+procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarCampo(DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string;
+var Validado, Cancelado: Boolean);
+var
+  vResposta  : string;
+  vCancelado : Boolean;
+  DoPerguntar: TThreadProcedure;
 begin
- //
+  vResposta  := Resposta;
+  vCancelado := Cancelado;
+
+  // Par�metros var/out (Resposta, Validado, Cancelado) n�o podem ser
+  // capturados por um m�todo an�nimo (E2555) -- por isso o trabalho � feito
+  // sobre as vari�veis locais vResposta/vCancelado, copiadas de volta no final.
+  DoPerguntar := procedure
+    var
+      FormCampo: TFrmPDV_TEF_Campo;
+    begin
+      FormCampo := TFrmPDV_TEF_Campo.Create(self);
+      try
+        FormCampo.Titulo        := DefinicaoCampo.TituloPergunta;
+        FormCampo.TamanhoMinimo := DefinicaoCampo.TamanhoMinimo;
+        FormCampo.TamanhoMaximo := DefinicaoCampo.TamanhoMaximo;
+        FormCampo.Ocultar       := DefinicaoCampo.OcultarDadosDigitados;
+        FormCampo.TipoDeEntrada := DefinicaoCampo.TipoDeEntrada;
+        FormCampo.Resposta      := DefinicaoCampo.ValorInicial;
+
+        vCancelado := (FormCampo.ShowModal <> mrOK);
+        if not vCancelado then
+          vResposta := FormCampo.Resposta;
+      finally
+        FormCampo.Free;
+      end;
+    end;
+
+  if TThread.CurrentThread.ThreadID <> MainThreadID then
+    TThread.Synchronize(nil, DoPerguntar)
+  else
+    DoPerguntar();
+
+  Resposta  := vResposta;
+  Validado  := false;
+  Cancelado := vCancelado;
 end;
 
+// Chamada a partir da thread de trabalho criada em doTEFConsultar/
+// EfetuarPagamentoTEF (mesma thread que roda EfetuarPagamento/
+// EfetuarAdministrativa) -- precisa sincronizar com a main thread antes de
+// criar/exibir a tela, pois VCL n�o � thread-safe. Agora dispara em toda
+// venda no cr�dito (ver EfetuarPagamentoTEF, que envia Financiamento
+// indefinido para deixar o TEF perguntar � vista/parcelado/etc), n�o s�
+// nos casos raros de antes.
 procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarMenu(const Titulo: string; Opcoes: TStringList;
 var ItemSelecionado: Integer);
 var
-  MR         : TModalResult;
-  FormMenuTEF: TFrmPDV_TEF_Operacoes;
+  vItemSelecionado: Integer;
+  DoPerguntar     : TThreadProcedure;
 begin
   if (Opcoes.Count < 1) then
   begin
     ItemSelecionado := -1;
     exit;
   end;
-//  if (Opcoes.Count = 2) then
-//  begin
-//    ItemSelecionado := 0;
-//    exit;
-//  end;
+  // if (Opcoes.Count = 2) then
+  // begin
+  // ItemSelecionado := 0;
+  // exit;
+  // end;
 
-  FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
-  try
-    FormMenuTEF.Titulo            := Titulo;
-    FormMenuTEF.Opcoes            := Opcoes;
-    FormMenuTEF.UsaTeclasDeAtalho := (Copy(Opcoes[0], 1, 4) = '1 - ');
-    FormMenuTEF.ItemSelecionado   := ItemSelecionado;
+  vItemSelecionado := ItemSelecionado;
 
-    MR := FormMenuTEF.ShowModal;
+  // ItemSelecionado � par�metro var e n�o pode ser capturado por um m�todo
+  // an�nimo (E2555) -- por isso o trabalho � feito sobre a vari�vel local
+  // vItemSelecionado, copiada de volta no final.
+  DoPerguntar := procedure
+    var
+      MR         : TModalResult;
+      FormMenuTEF: TFrmPDV_TEF_Operacoes;
+    begin
+      FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
+      try
+        FormMenuTEF.Titulo            := Titulo;
+        FormMenuTEF.Opcoes            := Opcoes;
+        FormMenuTEF.UsaTeclasDeAtalho := (Copy(Opcoes[0], 1, 4) = '1 - ');
+        FormMenuTEF.ItemSelecionado   := vItemSelecionado;
 
-    case MR of
-      mrOK:
-        ItemSelecionado := FormMenuTEF.ItemSelecionado;
-      mrRetry:
-        ItemSelecionado := -2; // Voltar
-    else
-      ItemSelecionado := -1; // Cancelar
+        MR := FormMenuTEF.ShowModal;
+
+        case MR of
+          mrOK:
+            vItemSelecionado := FormMenuTEF.ItemSelecionado;
+          mrRetry:
+            vItemSelecionado := -2; // Voltar
+        else
+          vItemSelecionado := -1; // Cancelar
+        end;
+      finally
+        FormMenuTEF.Free;
+      end;
     end;
-  finally
-    FormMenuTEF.Free;
+
+  if TThread.CurrentThread.ThreadID <> MainThreadID then
+    TThread.Synchronize(nil, DoPerguntar)
+  else
+    DoPerguntar();
+
+  ItemSelecionado := vItemSelecionado;
+end;
+
+// Recebe cada linha de log interno do TEF (comunica��o com o pinpad,
+// protocolo, etc) e grava num arquivo pr�prio, �til para diagn�stico junto
+// com o suporte da adquirente/ACBr. Tratado := true evita que o componente
+// tamb�m tente gravar em ArqLOG (que n�o usamos).
+procedure TFrmPDV.ACBrTEFAPI1QuandoGravarLog(const ALogLine: String; var Tratado: Boolean);
+begin
+  WriteLog(ApplicationPath + 'TEF_' + FormatDateTime('yyyymmdd', date) + '.log',
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', Now) + ' - ' + ALogLine);
+  Tratado := true;
+end;
+
+// Disparado a cada transa��o individual finalizada dentro de uma opera��o do
+// TEF (uma opera��o pode envolver mais de uma transa��o). A confirma��o do
+// pagamento em si j� � tratada pelo retorno de EfetuarPagamentoTEF; aqui s�
+// deixamos registro para diagn�stico.
+procedure TFrmPDV.ACBrTEFAPI1QuandoFinalizarTransacao(RespostaTEF: TACBrTEFResp; AStatus: TACBrTEFStatusTransacao);
+begin
+  WriteLog(ApplicationPath + 'TEF_' + FormatDateTime('yyyymmdd', date) + '.log',
+    FormatDateTime('dd/mm/yy hh:nn:ss:zzz', Now) + ' - Transa��o finalizada (' +
+    GetEnumName(TypeInfo(TACBrTEFStatusTransacao), Integer(AStatus)) + '): NSU ' + RespostaTEF.NSU + ', Rede ' +
+    RespostaTEF.Rede);
+end;
+
+// S� dispara quando ACBrTEFAPI1.TratamentoTransacaoPendente <> tefpenConfirmar
+// (hoje configurado como tefpenConfirmar em ConfigurarTEF, ou seja, o ACBr j�
+// confirma pend�ncias sozinho e esse evento n�o roda). Fica implementado como
+// rede de seguran�a, reaproveitando a mesma tela de menu usada em
+// ACBrTEFAPI1QuandoPerguntarMenu.
+procedure TFrmPDV.ACBrTEFAPI1QuandoDetectarTransacaoPendente(RespostaTEF: TACBrTEFResp; const MsgErro: String);
+var
+  MR         : TModalResult;
+  FormMenuTEF: TFrmPDV_TEF_Operacoes;
+  AStatus    : TACBrTEFStatusTransacao;
+  vOpcoes    : TStringList;
+begin
+  if TThread.CurrentThread.ThreadID <> MainThreadID then
+  begin
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        ACBrTEFAPI1QuandoDetectarTransacaoPendente(RespostaTEF, MsgErro);
+      end);
+    exit;
   end;
 
+  FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
+  vOpcoes     := TStringList.Create;
+  try
+    vOpcoes.Add('1 - Confirma��o Manual');
+    vOpcoes.Add('2 - Estorno Manual');
+    vOpcoes.Add('3 - Estorno, Falta de Energia');
+    vOpcoes.Add('4 - Estorno, Erro na Impress�o');
+    vOpcoes.Add('5 - Estorno, Erro no Dispensador');
+
+    FormMenuTEF.Titulo            := 'Transa��o Pendente';
+    FormMenuTEF.Opcoes            := vOpcoes;
+    FormMenuTEF.UsaTeclasDeAtalho := true;
+    FormMenuTEF.ItemSelecionado   := 0;
+
+    MR := FormMenuTEF.ShowModal;
+    if (MR = mrOK) then
+    begin
+      case FormMenuTEF.ItemSelecionado of
+        0:
+          AStatus := tefstsSucessoManual;
+        1:
+          AStatus := tefstsErroDiverso;
+        2:
+          AStatus := tefstsErroEnergia;
+        3:
+          AStatus := tefstsErroImpressao;
+        4:
+          AStatus := tefstsErroDispesador;
+      else
+        AStatus := tefstsSucessoManual;
+      end;
+
+      ACBrTEFAPI1.ResolverTransacaoPendente(AStatus);
+    end;
+  finally
+    vOpcoes.Free;
+    FormMenuTEF.Free;
+  end;
+end;
+
+// Chamado periodicamente pelo TEF enquanto aguarda uma a��o (cart�o no
+// pinpad, digita��o, etc), sempre na mesma thread de quem chamou
+// EfetuarPagamento/EfetuarAdministrativa (a thread de trabalho criada em
+// doTEFConsultar/EfetuarPagamentoTEF). S� consulta o flag setado pelo ESC do
+// operador (ver FormKeyDown) -- n�o mexe em VCL, ent�o n�o precisa
+// sincronizar com a main thread.
+procedure TFrmPDV.ACBrTEFAPI1QuandoEsperarOperacao(OperacaoAPI: TACBrTEFAPIOperacaoAPI; var Cancelar: Boolean);
+begin
+  Cancelar := FCancelarTEF;
+end;
+
+// Exibe/atualiza o QR Code (Pix) numa tela pr�pria, criada dinamicamente.
+// O TEF reenvia os mesmos dados enquanto aguarda o pagamento, e avisa que
+// deve sumir mandando DadosQRCode = '' assim que o Pix for aprovado (ou
+// cancelado) -- por isso a tela s� � criada uma vez e fechada nesse aviso.
+procedure TFrmPDV.ACBrTEFAPI1QuandoExibirQRCode(const DadosQRCode: String);
+begin
+  if TThread.CurrentThread.ThreadID <> MainThreadID then
+  begin
+    TThread.Synchronize(nil,
+      procedure
+      begin
+        ACBrTEFAPI1QuandoExibirQRCode(DadosQRCode);
+      end);
+    exit;
+  end;
+
+  if (DadosQRCode = '') then
+  begin
+    FreeAndNil(FFrmTEFQRCode);
+    exit;
+  end;
+
+  if not Assigned(FFrmTEFQRCode) then
+  begin
+    FFrmTEFQRCode := TFrmPDV_TEF_QRCode.Create(self);
+    FFrmTEFQRCode.Show;
+  end;
+
+  FFrmTEFQRCode.ExibirQRCode(DadosQRCode);
 end;
 
 procedure TFrmPDV.doTEFConsultar;
@@ -3996,26 +4229,36 @@ var
   vThread: TThread;
 begin
   IniciarContadorTEF;
+  FProcessandoTEF := true;
+  FCancelarTEF    := false;
 
   // AtivarTEF/EfetuarAdministrativa s�o chamadas s�ncronas/bloqueantes; rodando
   // numa thread separada a main thread (e sua fila de mensagens) fica livre.
-  // doTEFExibirMensagem se auto-sincroniza com a main thread.
+  // doTEFExibirMensagem se auto-sincroniza com a main thread. Enquanto essa
+  // thread roda, o operador pode cancelar com ESC (ver FormKeyDown), lido
+  // por ACBrTEFAPI1QuandoEsperarOperacao.
   vThread := TThread.CreateAnonymousThread(
     procedure
     begin
       try
-        AtivarTEF;
-        ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
-        if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
-          doTEFExibirMensagem('TEF iniciado com sucesso.')
-        else
-        begin
-          if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
-            doTEFExibirMensagem('Erro ao iniciar TEF');
+        try
+          AtivarTEF;
+          ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
+          if FCancelarTEF then
+            doTEFExibirMensagem('Ativa��o do TEF cancelada pelo operador.')
+          else if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
+            doTEFExibirMensagem('TEF iniciado com sucesso.')
+          else
+          begin
+            if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
+              doTEFExibirMensagem('Erro ao iniciar TEF');
+          end;
+        except
+          on e: exception do
+            doTEFExibirMensagem('Falha ao ativar TEF' + sLineBreak + e.Message);
         end;
-      except
-        on e: exception do
-          doTEFExibirMensagem('Falha ao ativar TEF' + sLineBreak + e.Message);
+      finally
+        FProcessandoTEF := false;
       end;
 
       FinalizarContadorTEF;
@@ -4024,16 +4267,22 @@ begin
   vThread.Start;
 end;
 
-// Efetua a cobran�a em cart�o (d�bito/cr�dito � vista) no PinPad via
-// ACBrTEFAPI1.EfetuarPagamento, mostrando o andamento em lblTEFAviso.
-// Bloqueia a thread chamadora (a main thread, chamada a partir de
-// doConfirmaPagamento) com um la�o de Application.ProcessMessages, que
-// continua bombeando as mensagens necess�rias pro TThread.Synchronize da
-// thread de trabalho funcionar.
+// Efetua a cobran�a em cart�o no PinPad via ACBrTEFAPI1.EfetuarPagamento,
+// mostrando o andamento em lblTEFAviso. D�bito vai sempre � vista (n�o
+// parcela); no cr�dito, o Financiamento � enviado como "N�o Definido" e as
+// Parcelas como 0, para que o pr�prio TEF pergunte ao operador -- via
+// ACBrTEFAPI1QuandoPerguntarMenu (� vista/parcelado/etc) e depois
+// ACBrTEFAPI1QuandoPerguntarCampo (quantidade de parcelas) -- exatamente como
+// no demo oficial do ACBr. Bloqueia a thread chamadora (a main thread,
+// chamada a partir de doConfirmaPagamento) com um la�o de
+// Application.ProcessMessages, que continua bombeando as mensagens
+// necess�rias pro TThread.Synchronize da thread de trabalho funcionar.
 function TFrmPDV.EfetuarPagamentoTEF(const ANumeroFiscal: String; AValor: Currency; ACartaoDebito: Boolean): Boolean;
 var
   vThread        : TThread;
   vCartoesAceitos: TACBrTEFTiposCartao;
+  vFinanciamento : TACBrTEFModalidadeFinanciamento;
+  vParcelas      : Byte;
   vConcluido, vOk: Boolean;
 begin
   result := false;
@@ -4041,11 +4290,20 @@ begin
     exit;
 
   if ACartaoDebito then
-    vCartoesAceitos := [teftcDebito]
+  begin
+    vCartoesAceitos := [teftcDebito];
+    vFinanciamento  := tefmfAVista;
+    vParcelas       := 1;
+  end
   else
+  begin
     vCartoesAceitos := [teftcCredito];
+    vFinanciamento  := tefmfNaoDefinido;
+    vParcelas       := 0;
+  end;
 
   FProcessandoTEF      := true;
+  FCancelarTEF         := false;
   vConcluido           := false;
   vOk                  := false;
   edValorForma.Enabled := false;
@@ -4056,7 +4314,8 @@ begin
       procedure
       begin
         try
-          vOk := ACBrTEFAPI1.EfetuarPagamento(ANumeroFiscal, AValor, tefmpCartao, vCartoesAceitos, tefmfAVista, 1);
+          vOk := ACBrTEFAPI1.EfetuarPagamento(ANumeroFiscal, AValor, tefmpCartao, vCartoesAceitos, vFinanciamento,
+            vParcelas);
           vOk := vOk and ACBrTEFAPI1.UltimaRespostaTEF.Sucesso and ACBrTEFAPI1.UltimaRespostaTEF.TransacaoAprovada;
         except
           on e: exception do
@@ -4076,9 +4335,12 @@ begin
     result := vOk;
     if vOk then
       doTEFExibirMensagem('Pagamento aprovado.')
+    else if FCancelarTEF then
+      doTEFExibirMensagem('Pagamento cancelado pelo operador.')
     else
       doTEFExibirMensagem('Pagamento n�o aprovado.');
   finally
+    FreeAndNil(FFrmTEFQRCode);
     edValorForma.Enabled := true;
     FProcessandoTEF      := false;
   end;
@@ -4155,7 +4417,9 @@ begin
     goTerminal.Impressora.pimp_stop,                                    //
     goTerminal.Impressora.pimp_handshake,                               //
     goTerminal.Impressora.pimp_hardflow,                                //
-    goTerminal.Impressora.pimp_softflow);
+    goTerminal.Impressora.pimp_softflow, goTerminal.Impressora.pimp_colunas, goTerminal.Impressora.pimp_linhas,
+    goTerminal.Impressora.pimp_espacos
+    );
 end;
 
 procedure TFrmPDV.doSATSendAllPays;

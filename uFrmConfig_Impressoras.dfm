@@ -3,8 +3,8 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
   Top = 0
   BorderStyle = bsNone
   Caption = 'Cadastro do terminal'
-  ClientHeight = 512
-  ClientWidth = 452
+  ClientHeight = 522
+  ClientWidth = 458
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -19,8 +19,8 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
   object Shape27: TShape
     Left = 0
     Top = 24
-    Width = 452
-    Height = 488
+    Width = 458
+    Height = 498
     Margins.Left = 10
     Margins.Top = 0
     Margins.Right = 0
@@ -28,14 +28,13 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
     Align = alClient
     Brush.Style = bsClear
     Pen.Color = clSilver
-    ExplicitTop = 32
-    ExplicitWidth = 784
-    ExplicitHeight = 599
+    ExplicitLeft = 1
+    ExplicitHeight = 536
   end
   object Shape16: TShape
     Left = 0
     Top = 0
-    Width = 452
+    Width = 458
     Height = 24
     Margins.Left = 10
     Margins.Top = 0
@@ -101,7 +100,7 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
     ParentFont = False
   end
   object Label4: TLabel
-    Left = 319
+    Left = 327
     Top = 216
     Width = 52
     Height = 16
@@ -199,8 +198,8 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
     ParentFont = False
   end
   object lblMsgRapida: TLabel
-    Left = 13
-    Top = 472
+    Left = 11
+    Top = 480
     Width = 250
     Height = 16
     Caption = 'Pressione [F2] para gravar altera'#231#245'es'
@@ -219,6 +218,92 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
     Height = 16
     Caption = 'Impressora do Windows'
     FocusControl = cbpimp_impressora
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label11: TLabel
+    Left = 13
+    Top = 357
+    Width = 47
+    Height = 16
+    Caption = 'Linhas'
+    FocusControl = cbpimp_impressora
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Shape2: TShape
+    Left = 0
+    Top = 24
+    Width = 458
+    Height = 498
+    Margins.Left = 10
+    Margins.Top = 0
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alClient
+    Brush.Style = bsClear
+    Pen.Color = clSilver
+    ExplicitLeft = 1
+    ExplicitHeight = 536
+  end
+  object Shape3: TShape
+    Left = 0
+    Top = 24
+    Width = 458
+    Height = 498
+    Margins.Left = 10
+    Margins.Top = 0
+    Margins.Right = 0
+    Margins.Bottom = 0
+    Align = alClient
+    Brush.Style = bsClear
+    Pen.Color = clSilver
+    ExplicitLeft = 1
+    ExplicitHeight = 536
+  end
+  object Label13: TLabel
+    Left = 208
+    Top = 357
+    Width = 60
+    Height = 16
+    Caption = 'Espa'#231'os'
+    FocusControl = cbpimp_impressora
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label12: TLabel
+    Left = 108
+    Top = 357
+    Width = 58
+    Height = 16
+    Caption = 'Colunas'
+    FocusControl = cbpimp_impressora
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -13
+    Font.Name = 'Verdana'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Label14: TLabel
+    Left = 327
+    Top = 259
+    Width = 108
+    Height = 16
+    Caption = 'Cod. da p'#225'gina'
+    FocusControl = cbbLkupPagina
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -13
@@ -290,34 +375,29 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
       object cxGrid1DBTableView1pimp_id: TcxGridDBColumn
         Caption = 'ID'
         DataBinding.FieldName = 'pimp_id'
-        DataBinding.IsNullValueType = True
         Options.AutoWidthSizable = False
         Width = 58
       end
       object cxGrid1DBTableView1pimp_descricao: TcxGridDBColumn
         Caption = 'Descri'#231#227'o'
         DataBinding.FieldName = 'pimp_descricao'
-        DataBinding.IsNullValueType = True
         Width = 163
       end
       object cxGrid1DBTableView1pimp_modelo: TcxGridDBColumn
         Caption = 'Modelo'
         DataBinding.FieldName = 'pimp_modelo_descr'
-        DataBinding.IsNullValueType = True
         Options.AutoWidthSizable = False
         Width = 97
       end
       object cxGrid1DBTableView1pimp_port: TcxGridDBColumn
         Caption = 'Porta'
         DataBinding.FieldName = 'pimp_port'
-        DataBinding.IsNullValueType = True
         Options.AutoWidthSizable = False
         Width = 56
       end
       object cxGrid1DBTableView1pimp_ativo: TcxGridDBColumn
         Caption = 'Ativo'
         DataBinding.FieldName = 'pimp_ativo'
-        DataBinding.IsNullValueType = True
         HeaderAlignmentHorz = taCenter
         Options.AutoWidthSizable = False
         Width = 39
@@ -392,7 +472,7 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
   end
   object ckpimp_ativo: TcxDBCheckBox
     Left = 8
-    Top = 355
+    Top = 402
     Caption = 'Ativo'
     DataBinding.DataField = 'pimp_ativo'
     DataBinding.DataSource = doImpressoras
@@ -517,7 +597,7 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
     Width = 151
   end
   object cbpimp_modelo: TcxDBLookupComboBox
-    Left = 319
+    Left = 327
     Top = 232
     DataBinding.DataField = 'pimp_modelo'
     DataBinding.DataSource = doImpressoras
@@ -580,12 +660,55 @@ object FrmConfig_Impressoras: TFrmConfig_Impressoras
   end
   object cxButton1: TcxButton
     Left = 13
-    Top = 429
+    Top = 432
     Width = 300
     Height = 25
     Caption = 'Teste de impress'#227'o'
     TabOrder = 13
     OnClick = cxButton1Click
+  end
+  object cxSpinLinhas: TcxDBSpinEdit
+    Left = 13
+    Top = 375
+    DataBinding.DataField = 'pimp_linhas'
+    DataBinding.DataSource = doImpressoras
+    TabOrder = 14
+    Width = 80
+  end
+  object cxSpinColunas: TcxDBSpinEdit
+    Left = 109
+    Top = 375
+    DataBinding.DataField = 'pimp_colunas'
+    DataBinding.DataSource = doImpressoras
+    TabOrder = 15
+    Width = 80
+  end
+  object cxSpinEspacos: TcxDBSpinEdit
+    Left = 208
+    Top = 375
+    DataBinding.DataField = 'pimp_espacos'
+    DataBinding.DataSource = doImpressoras
+    TabOrder = 16
+    Width = 80
+  end
+  object cbbLkupPagina: TcxDBComboBox
+    Left = 327
+    Top = 275
+    DataBinding.DataField = 'pimp_codigo_pagina'
+    DataBinding.DataSource = doImpressoras
+    ParentFont = False
+    Style.Font.Charset = DEFAULT_CHARSET
+    Style.Font.Color = clWindowText
+    Style.Font.Height = -13
+    Style.Font.Name = 'Verdana'
+    Style.Font.Style = []
+    Style.LookAndFeel.SkinName = 'Blue'
+    Style.IsFontAssigned = True
+    StyleDisabled.LookAndFeel.SkinName = 'Blue'
+    StyleFocused.LookAndFeel.SkinName = 'Blue'
+    StyleHot.LookAndFeel.SkinName = 'Blue'
+    TabOrder = 17
+    Width = 121
   end
   object WiEventsForm1: TWiEventsForm
     IDControl = edpimp_descricao

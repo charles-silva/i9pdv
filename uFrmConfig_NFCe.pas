@@ -53,7 +53,7 @@ uses
   cxDBLookupEdit, cxDBLookupComboBox, ACBrNFeConfiguracoes,
   ACBrNFeDANFEFRDM, ACBrNFeDANFEFR, dxSkinsCore, dxSkinBlue, dxSkinCaramel, dxSkinOffice2010Silver,
   dxSkinscxPCPainter, cxRichEdit, dxSkinWhiteprint, ACBrDFeSSL, blcksock,
-  frxClass;
+  frxClass, dxSkinDarkroom, dxSkinDarkSide, dxSkinDevExpressDarkStyle;
 
 const
   BufferMemoResposta = 1000; { Maximo de Linhas no MemoResposta }

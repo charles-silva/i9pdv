@@ -136,6 +136,13 @@ type
     procedure Setpimp_port(const Value: string);
     procedure Setpimp_softflow(const Value: Boolean);
     procedure Setpimp_stop(const Value: Integer);
+  private
+    Fpimp_colunas: Integer;
+    Fpimp_espacos: Integer;
+    Fpimp_linhas : Integer;
+    procedure Setpimp_colunas(const Value: Integer);
+    procedure Setpimp_espacos(const Value: Integer);
+    procedure Setpimp_linhas(const Value: Integer);
   public
     property pimp_descricao : String read Fpimp_descricao write Setpimp_descricao;
     property pimp_modelo    : Integer read Fpimp_modelo write Setpimp_modelo;
@@ -148,6 +155,9 @@ type
     property pimp_hardflow  : Boolean read Fpimp_hardflow write Setpimp_hardflow;
     property pimp_softflow  : Boolean read Fpimp_softflow write Setpimp_softflow;
     property pimp_impressora: String read Fpimp_impressora write Setpimp_impressora;
+    property pimp_linhas    : Integer read Fpimp_linhas write Setpimp_linhas;
+    property pimp_colunas   : Integer read Fpimp_colunas write Setpimp_colunas;
+    property pimp_espacos   : Integer read Fpimp_espacos write Setpimp_espacos;
   end;
 
   TFormaPag = class
@@ -1648,6 +1658,10 @@ begin
     result.impressora.pimp_hardflow   := goPDVConnection.GetQuery.FieldByName('pimp_hardflow').AsBoolean;
     result.impressora.pimp_softflow   := goPDVConnection.GetQuery.FieldByName('pimp_softflow').AsBoolean;
     result.impressora.pimp_impressora := goPDVConnection.GetQuery.FieldByName('pimp_impressora').Asstring;
+
+    result.impressora.pimp_linhas  := goPDVConnection.GetQuery.FieldByName('pimp_linhas').AsInteger;
+    result.impressora.pimp_colunas := goPDVConnection.GetQuery.FieldByName('pimp_colunas').AsInteger;
+    result.impressora.pimp_espacos := goPDVConnection.GetQuery.FieldByName('pimp_espacos').AsInteger;
   end;
 
   goPDVConnection.GetQuery.Open('select * from pdv.tb_balancas where pbal_id = ' + IntToStr(result.pbal_id));
@@ -1966,6 +1980,11 @@ begin
   Fpimp_baud := Value;
 end;
 
+procedure TImpressora.Setpimp_colunas(const Value: Integer);
+begin
+  Fpimp_colunas := Value;
+end;
+
 procedure TImpressora.Setpimp_data(const Value: Integer);
 begin
   Fpimp_data := Value;
@@ -1976,6 +1995,11 @@ begin
   Fpimp_descricao := Value;
 end;
 
+procedure TImpressora.Setpimp_espacos(const Value: Integer);
+begin
+  Fpimp_espacos := Value;
+end;
+
 procedure TImpressora.Setpimp_hardflow(const Value: Boolean);
 begin
   Fpimp_hardflow := Value;
@@ -1984,6 +2008,11 @@ end;
 procedure TImpressora.Setpimp_impressora(const Value: String);
 begin
   Fpimp_impressora := Value;
+end;
+
+procedure TImpressora.Setpimp_linhas(const Value: Integer);
+begin
+  Fpimp_linhas := Value;
 end;
 
 procedure TImpressora.Setpimp_handshake(const Value: Integer);

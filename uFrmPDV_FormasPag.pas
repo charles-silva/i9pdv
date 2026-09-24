@@ -21,6 +21,7 @@ type
     fp_descricao: String;
     fp_cartao: boolean;
     fp_debito: boolean;
+    fp_pix: boolean;
   end;
 
   TFrmPDV_FormasPag = class(TForm)
@@ -129,6 +130,7 @@ begin
     loListFormasPag.fp_codigo    := fdFormas.FieldByName('fp_codigo').AsInteger;
     loListFormasPag.fp_descricao := fdFormas.FieldByName('fp_descricao').AsString;
     loListFormasPag.fp_cartao    := (fdFormas.FieldByName('fp_cartao').AsInteger = 1);
+    loListFormasPag.fp_pix       := (fdFormas.FieldByName('fp_pix').AsInteger = 1);
     loListFormasPag.fp_debito    := fdFormas.FieldByName('fp_debito').AsBoolean;
     loListItem                   := lstListFormas.Items.Add;
     loListItem.Data              := Pointer(loListFormasPag);

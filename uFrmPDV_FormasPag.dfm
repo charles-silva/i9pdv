@@ -186,7 +186,7 @@ object FrmPDV_FormasPag: TFrmPDV_FormasPag
     SQL.Strings = (
       'SELECT fp_codigo, '
       'SUBSTRING(CONVERT(VARCHAR(4),fp_indice_pdv+1000),3,2)  '
-      'AS fp_indice_pdv,fp_descricao,fp_cartao,'
+      'AS fp_indice_pdv,fp_descricao,fp_cartao, fp_pix,'
       'fp_debito FROM dbo.t_formaspag '
       'WHERE fp_pdv=1 AND fp_status=1 and '
       '(fp_dinheiro = 1 or :dinheiro = 0)')

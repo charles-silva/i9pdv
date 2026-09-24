@@ -84,7 +84,7 @@ type
       aVersaoCFe: String; aSalvarCFe, aSalvarCFeCanc, aSalvarEnvio, aSepararPorCNPJ, aSepararPorMes: Boolean;
       aPastaInput, aPastaOutput: String; aTimeout, aPrinterModel: Integer; aPrinterPort: string;
       aPrinterBaud, aPrinterData, aPrinterParity, aPrinterStop, aPrinterHandshake: Integer;
-      aPrinterHardflow, aPrinterSoftflow: Boolean); stdcall;
+      aPrinterHardflow, aPrinterSoftflow: Boolean; aColunas: Integer; aLinhas: Integer; aEspacos: Integer); stdcall;
     procedure doKeyDown(var Key: Word; Shift: TShiftState);
     destructor Destroy; override;
   end;
@@ -117,7 +117,7 @@ procedure TFrmPDV_SAT.doSATStart(aHandle: Cardinal; aCodigoDeAtivacao, aSignAC: 
   aPrinterStop: Integer;                                                                //
   aPrinterHandshake: Integer;                                                           //
   aPrinterHardflow: Boolean;                                                            //
-  aPrinterSoftflow: Boolean); stdcall;
+  aPrinterSoftflow: Boolean; aColunas: Integer; aLinhas: Integer; aEspacos: Integer); stdcall;
 begin
   // goHandleMain       := aHandle;
   goCodigoDeAtivacao := aCodigoDeAtivacao;
@@ -155,22 +155,14 @@ begin
     // Integrador.Timeout     := aTimeout;
 
     ACBrPosPrinter1.Desativar;
-    ACBrPosPrinter1.Modelo                  := TACBrPosPrinterModelo(aPrinterModel);
-    ACBrPosPrinter1.PaginaDeCodigo          := TACBrPosPaginaCodigo(pc860);
-    ACBrPosPrinter1.Porta                   := aPrinterPort;
-//    ACBrPosPrinter1.ColunasFonteNormal      := 48;
-//    ACBrPosPrinter1.LinhasEntreCupons       := 0;
-//    ACBrPosPrinter1.EspacoEntreLinhas       := 0;
-//    ACBrPosPrinter1.Device.Baud             := aPrinterBaud;
-//    ACBrPosPrinter1.Device.Data             := aPrinterData;
-//    ACBrPosPrinter1.Device.Parity           := TACBrSerialParity(aPrinterParity);
-//    ACBrPosPrinter1.Device.Stop             := TACBrSerialStop(aPrinterStop);
-//    ACBrPosPrinter1.Device.Handshake        := TACBrHandShake(aPrinterHandshake);
-//    ACBrPosPrinter1.Device.HardFlow         := aPrinterHardflow;
-//    ACBrPosPrinter1.Device.Softflow         := aPrinterSoftflow;
-//    ACBrSATExtratoESCPOS1.ImprimeQRCode     := true;
-//    ACBrSATExtratoESCPOS1.ImprimeEmUmaLinha := false;
-    Inicializado                            := true;
+    ACBrPosPrinter1.Modelo             := TACBrPosPrinterModelo(aPrinterModel);
+    ACBrPosPrinter1.PaginaDeCodigo     := TACBrPosPaginaCodigo(pc860);
+    ACBrPosPrinter1.Porta              := aPrinterPort;
+    ACBrPosPrinter1.ColunasFonteNormal := aColunas;
+    ACBrPosPrinter1.LinhasEntreCupons  := aLinhas;
+    ACBrPosPrinter1.EspacoEntreLinhas  := aEspacos;
+
+    Inicializado := true;
   end
 end;
 

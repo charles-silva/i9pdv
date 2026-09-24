@@ -68,7 +68,7 @@ object FrmConfig_NFCe: TFrmConfig_NFCe
     Width = 545
     Height = 371
     TabOrder = 0
-    Properties.ActivePage = cxTabSheet2
+    Properties.ActivePage = cxTabSheet1
     Properties.CustomButtons.Buttons = <>
     Properties.ShowFrame = True
     LookAndFeel.Kind = lfOffice11
@@ -666,6 +666,10 @@ object FrmConfig_NFCe: TFrmConfig_NFCe
       Color = clBtnFace
       ImageIndex = 21
       ParentColor = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label22: TLabel
         Left = 11
         Top = 270
@@ -822,6 +826,10 @@ object FrmConfig_NFCe: TFrmConfig_NFCe
       Color = clBtnFace
       ImageIndex = 65
       ParentColor = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object cxPageControl2: TcxPageControl
         AlignWithMargins = True
         Left = 3
@@ -844,6 +852,10 @@ object FrmConfig_NFCe: TFrmConfig_NFCe
           Color = clBtnFace
           ImageIndex = 0
           ParentColor = False
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label1: TLabel
             Left = 9
             Top = 67
@@ -1092,6 +1104,10 @@ object FrmConfig_NFCe: TFrmConfig_NFCe
           Color = clBtnFace
           ImageIndex = 1
           ParentColor = False
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label18: TLabel
             Left = 8
             Top = 13
@@ -1181,6 +1197,10 @@ object FrmConfig_NFCe: TFrmConfig_NFCe
       ParentColor = False
       TabVisible = False
       OnShow = cxTabSheet5Show
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         537
         343)

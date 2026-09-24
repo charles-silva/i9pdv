@@ -65,6 +65,16 @@ type
     ACBrPosPrinter1: TACBrPosPrinter;
     cbpimp_port: TcxDBComboBox;
     cxButton1: TcxButton;
+    cxSpinLinhas: TcxDBSpinEdit;
+    Label11: TLabel;
+    Shape2: TShape;
+    cxSpinColunas: TcxDBSpinEdit;
+    Label12: TLabel;
+    Shape3: TShape;
+    cxSpinEspacos: TcxDBSpinEdit;
+    Label13: TLabel;
+    Label14: TLabel;
+    cbbLkupPagina: TcxDBComboBox;
     procedure FormShow(Sender: TObject);
     procedure Shape16MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -112,12 +122,12 @@ end;
 procedure TFrmConfig_Impressoras.ConfigurarPosPrinter;
 begin
   ACBrPosPrinter1.Desativar;
-  ACBrPosPrinter1.Modelo         := TACBrPosPrinterModelo(cbpimp_modelo.ItemIndex);
- // ACBrPosPrinter1.PaginaDeCodigo := TACBrPosPaginaCodigo(cppimp_pagina.ItemIndex);
-  ACBrPosPrinter1.Porta          := cbpimp_port.Text;
-  // ACBrPosPrinter1.ColunasFonteNormal := seColunas.Value;
-  // ACBrPosPrinter1.LinhasEntreCupons := seLinhasPular.Value;
-  // ACBrPosPrinter1.EspacoEntreLinhas := seEspLinhas.Value;
+  ACBrPosPrinter1.Modelo             := TACBrPosPrinterModelo(cbpimp_modelo.ItemIndex);
+  ACBrPosPrinter1.PaginaDeCodigo     := TACBrPosPaginaCodigo(cbbLkupPagina.ItemIndex);
+  ACBrPosPrinter1.Porta              := cbpimp_port.Text;
+  ACBrPosPrinter1.ColunasFonteNormal := cxSpinColunas.Value;
+  ACBrPosPrinter1.LinhasEntreCupons  := cxSpinLinhas.Value;
+  ACBrPosPrinter1.EspacoEntreLinhas  := cxspinEspacos.Value;
 end;
 
 procedure TFrmConfig_Impressoras.AtivarPosPrinter;
@@ -160,7 +170,7 @@ begin
       SL.Add('');
       SL.Add('</corte_total>');
 
-       AdicionarLinhaImpressao(SL.Text);
+      AdicionarLinhaImpressao(SL.Text);
     finally
       SL.Free;
     end;
@@ -256,12 +266,11 @@ begin
   LoadLookUpComboBox(self, FrmPDV_DModule.ADConnection1, cbpimp_handshake, 'SELECT * FROM pdv.GetListHandShake()',
     'descricao', 'idx');
 
-//  cppimp_pagina.Properties.Items.Clear;
-//  For i := Low(TACBrPosPaginaCodigo) to High(TACBrPosPaginaCodigo) do
-//    cppimp_pagina.Properties.Items.Add(GetEnumName(TypeInfo(TACBrPosPaginaCodigo), Integer(i)));
+  cbbLkupPagina.Properties.Items.Clear;
+  For i := Low(TACBrPosPaginaCodigo) to High(TACBrPosPaginaCodigo) do
+    cbbLkupPagina.Properties.Items.Add(GetEnumName(TypeInfo(TACBrPosPaginaCodigo), Integer(i)));
 
   LoadImpressoras;
-
   dsImpressoras.Active := true;
   Shape16.Brush.Color  := FrmPDV.CordoMes.Color;
 end;

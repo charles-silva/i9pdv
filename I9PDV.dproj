@@ -288,6 +288,14 @@
             <Form>FrmPDV_TEF_Parcelas</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="uFrmPDV_TEF_QRCode.pas">
+            <Form>FrmPDV_TEF_QRCode</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="uFrmPDV_TEF_Campo.pas">
+            <Form>FrmPDV_TEF_Campo</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <DCCReference Include="uPDV_Print.pas"/>
         <DCCReference Include="uPDV_SetValores.pas"/>
         <DCCReference Include="uPDV_NF.pas"/>

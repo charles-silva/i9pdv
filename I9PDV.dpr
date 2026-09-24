@@ -50,6 +50,8 @@ uses
   uFrmPDV_TEF in 'uFrmPDV_TEF.pas' {FrmPDV_TEF},
   uFrmPDV_TEF_Operacoes in 'uFrmPDV_TEF_Operacoes.pas' {FrmPDV_TEF_Operacoes},
   uFrmPDV_TEF_Parcelas in 'uFrmPDV_TEF_Parcelas.pas' {FrmPDV_TEF_Parcelas},
+  uFrmPDV_TEF_QRCode in 'uFrmPDV_TEF_QRCode.pas' {FrmPDV_TEF_QRCode},
+  uFrmPDV_TEF_Campo in 'uFrmPDV_TEF_Campo.pas' {FrmPDV_TEF_Campo},
   uPDV_Print in 'uPDV_Print.pas',
   uPDV_SetValores in 'uPDV_SetValores.pas',
   uPDV_NF in 'uPDV_NF.pas',
