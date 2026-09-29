@@ -44251,7 +44251,7 @@ object FrmPDV: TFrmPDV
       StyleElements = []
     end
     object Label2: TLabel
-      Left = 571
+      Left = 627
       Top = 26
       Width = 70
       Height = 18
@@ -44266,7 +44266,7 @@ object FrmPDV: TFrmPDV
       StyleElements = []
     end
     object lblCaixaOperador: TLabel
-      Left = 571
+      Left = 627
       Top = 47
       Width = 44
       Height = 18
@@ -44281,7 +44281,7 @@ object FrmPDV: TFrmPDV
     end
     object Image4: TImage
       AlignWithMargins = True
-      Left = 484
+      Left = 540
       Top = 17
       Width = 107
       Height = 63

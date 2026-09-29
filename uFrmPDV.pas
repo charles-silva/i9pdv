@@ -537,6 +537,9 @@ type
     procedure doTEFAtualizarAviso(const AMsg: String; AContador: Integer = 0);
     procedure doTEFExibirMensagem(const AMsg: String);
     procedure doTEFConsultar;
+    function EfetuarPagamentoTEFComum(const ANumeroFiscal: String; AValor: Currency;
+      AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
+      AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
   protected
     { Private declarations }
   public
@@ -576,6 +579,7 @@ type
     procedure doAddFormaList(afp_codigo, aPnfp_id: Integer; afp_descricao: string);
     procedure existNotasContigencia;
     function EfetuarPagamentoTEF(const ANumeroFiscal: String; AValor: Currency; ACartaoDebito: Boolean): Boolean;
+    function EfetuarPagamentoTEFPix(const ANumeroFiscal: String; AValor: Currency): Boolean;
     function EstornarTransacaoTEF(const ANSU, ACodigoAutorizacao, ARede, AFinalizacao: String; ADataHora: TDateTime;
       AValor: Double): Boolean;
 
@@ -4277,30 +4281,16 @@ end;
 // chamada a partir de doConfirmaPagamento) com um la�o de
 // Application.ProcessMessages, que continua bombeando as mensagens
 // necess�rias pro TThread.Synchronize da thread de trabalho funcionar.
-function TFrmPDV.EfetuarPagamentoTEF(const ANumeroFiscal: String; AValor: Currency; ACartaoDebito: Boolean): Boolean;
+function TFrmPDV.EfetuarPagamentoTEFComum(const ANumeroFiscal: String; AValor: Currency;
+  AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
+  AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
 var
   vThread        : TThread;
-  vCartoesAceitos: TACBrTEFTiposCartao;
-  vFinanciamento : TACBrTEFModalidadeFinanciamento;
-  vParcelas      : Byte;
   vConcluido, vOk: Boolean;
 begin
   result := false;
   if FProcessandoTEF then
     exit;
-
-  if ACartaoDebito then
-  begin
-    vCartoesAceitos := [teftcDebito];
-    vFinanciamento  := tefmfAVista;
-    vParcelas       := 1;
-  end
-  else
-  begin
-    vCartoesAceitos := [teftcCredito];
-    vFinanciamento  := tefmfNaoDefinido;
-    vParcelas       := 0;
-  end;
 
   FProcessandoTEF      := true;
   FCancelarTEF         := false;
@@ -4314,8 +4304,8 @@ begin
       procedure
       begin
         try
-          vOk := ACBrTEFAPI1.EfetuarPagamento(ANumeroFiscal, AValor, tefmpCartao, vCartoesAceitos, vFinanciamento,
-            vParcelas);
+          vOk := ACBrTEFAPI1.EfetuarPagamento(ANumeroFiscal, AValor, AModalidade, ACartoesAceitos, AFinanciamento,
+            AParcelas);
           vOk := vOk and ACBrTEFAPI1.UltimaRespostaTEF.Sucesso and ACBrTEFAPI1.UltimaRespostaTEF.TransacaoAprovada;
         except
           on e: exception do
@@ -4344,6 +4334,37 @@ begin
     edValorForma.Enabled := true;
     FProcessandoTEF      := false;
   end;
+end;
+
+function TFrmPDV.EfetuarPagamentoTEF(const ANumeroFiscal: String; AValor: Currency; ACartaoDebito: Boolean): Boolean;
+var
+  vCartoesAceitos: TACBrTEFTiposCartao;
+  vFinanciamento : TACBrTEFModalidadeFinanciamento;
+  vParcelas      : Byte;
+begin
+  if ACartaoDebito then
+  begin
+    vCartoesAceitos := [teftcDebito];
+    vFinanciamento  := tefmfAVista;
+    vParcelas       := 1;
+  end
+  else
+  begin
+    vCartoesAceitos := [teftcCredito];
+    vFinanciamento  := tefmfNaoDefinido;
+    vParcelas       := 0;
+  end;
+
+  result := EfetuarPagamentoTEFComum(ANumeroFiscal, AValor, tefmpCartao, vCartoesAceitos, vFinanciamento, vParcelas);
+end;
+
+// Recebimento via Pix no TEF (QR Code). Modalidade tefmpCarteiraVirtual n�o usa
+// CartoesAceitos; a exibi��o/atualiza��o do QR Code chega pelo callback
+// ACBrTEFAPI1QuandoExibirQRCode, j� tratado por EfetuarPagamentoTEFComum (que
+// fecha FFrmTEFQRCode ao final, como no d�bito/cr�dito).
+function TFrmPDV.EfetuarPagamentoTEFPix(const ANumeroFiscal: String; AValor: Currency): Boolean;
+begin
+  result := EfetuarPagamentoTEFComum(ANumeroFiscal, AValor, tefmpCarteiraVirtual, [], tefmfAVista, 0);
 end;
 
 // Estorna uma transa��o TEF j� aprovada, usado quando o pagamento no cart�o

@@ -785,20 +785,20 @@ begin
         lofp_codigo    := FrmPDV_FormasPag.gofp_codigo;
         lofp_descricao := FrmPDV_FormasPag.gofp_descricao;
 
-        { Recebimento no TEF - Cart�o de Cr�dito e D�bito }
+        { Recebimento no TEF - Cart�o de Crédito e Débito }
         if (goTerminal.pterm_tef) and (FrmPDV_FormasPag.gofp_cartao) then
         begin
-          if FrmPDV.EfetuarPagamentoTEF(loNF.NumeroFiscal.ToString, edValorForma.Value,
-            FrmPDV_FormasPag.gofp_debito) then
+          if FrmPDV.EfetuarPagamentoTEF(loNF.NumeroFiscal.ToString, edValorForma.Value, FrmPDV_FormasPag.gofp_debito)
+          then
           begin
             with FrmPDV.ACBrTEFAPI1.UltimaRespostaTEF do
             begin
               loNSU_SITEF                := NSU_TEF;
-              loNSU_HOSTTEF               := NSU;
-              loNSU_BANDEIRA              := Rede;
-              loParcelas                  := QtdParcelas.ToString;
-              loComprovante1aVia          := ImagemComprovante1aVia.Text;
-              loComprovante2aVia          := ImagemComprovante2aVia.Text;
+              loNSU_HOSTTEF              := NSU;
+              loNSU_BANDEIRA             := Rede;
+              loParcelas                 := QtdParcelas.ToString;
+              loComprovante1aVia         := ImagemComprovante1aVia.Text;
+              loComprovante2aVia         := ImagemComprovante2aVia.Text;
               loCodigoAutorizacaoTEF     := CodigoAutorizacaoTransacao;
               loDataHoraTransacaoHostTEF := DataHoraTransacaoHost;
               loFinalizacaoTEF           := Finalizacao;
@@ -827,6 +827,49 @@ begin
           end
           else
             exit; { pagamento negado ou falhou -- nada a persistir, volta pra tela de formas de pagamento }
+        end;
+
+        { Recebimento no TEF - Pix (QR Code) }
+        if (goTerminal.pterm_tef) and (FrmPDV_FormasPag.gofp_pix) then
+        begin
+          if FrmPDV.EfetuarPagamentoTEFPix(loNF.NumeroFiscal.ToString, edValorForma.Value) then
+          begin
+            with FrmPDV.ACBrTEFAPI1.UltimaRespostaTEF do
+            begin
+              loNSU_SITEF                := NSU_TEF;
+              loNSU_HOSTTEF              := NSU;
+              loNSU_BANDEIRA             := Rede;
+              loParcelas                 := QtdParcelas.ToString;
+              loComprovante1aVia         := ImagemComprovante1aVia.Text;
+              loComprovante2aVia         := ImagemComprovante2aVia.Text;
+              loCodigoAutorizacaoTEF     := CodigoAutorizacaoTransacao;
+              loDataHoraTransacaoHostTEF := DataHoraTransacaoHost;
+              loFinalizacaoTEF           := Finalizacao;
+              loValorTotalTEF            := ValorTotal;
+            end;
+
+            loPnfp_id := doAdicFormaNF(lofp_codigo, 0, loWiBiRespostaValidador, loPOSManual, loadq_id, lopos_id,
+              loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
+            if loPnfp_id = 0 then
+            begin
+              { pagamento j� aprovado no Pix, mas falhou ao gravar localmente -> estornar }
+              FrmPDV.EstornarTransacaoTEF(loNSU_HOSTTEF, loCodigoAutorizacaoTEF, loNSU_BANDEIRA, loFinalizacaoTEF,
+                loDataHoraTransacaoHostTEF, loValorTotalTEF);
+              exit;
+            end;
+            doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
+
+            if not doNFFechamento then
+            begin
+              { nota n�o finalizada (SEFAZ/SAT/impress�o) ap�s Pix aprovado -> estornar }
+              FrmPDV.EstornarTransacaoTEF(loNSU_HOSTTEF, loCodigoAutorizacaoTEF, loNSU_BANDEIRA, loFinalizacaoTEF,
+                loDataHoraTransacaoHostTEF, loValorTotalTEF);
+              exit;
+            end;
+            doNFSituacaoFechamento;
+          end
+          else
+            exit; { pagamento negado, cancelado ou falhou -- nada a persistir, volta pra tela de formas de pagamento }
         end;
 {$REGION 'Recebimento no POS - Cart�o de Cr�dito e D�bito'}
         if (goTerminal.pterm_pos) and (FrmPDV_FormasPag.gofp_cartao) then
@@ -863,7 +906,7 @@ begin
           end;
         end;
 {$ENDREGION}
-        if not FrmPDV_FormasPag.gofp_cartao then
+        if not (FrmPDV_FormasPag.gofp_cartao or (goTerminal.pterm_tef and FrmPDV_FormasPag.gofp_pix)) then
         begin
           if loWiBiRespostaValidador = nil then
             loWiBiRespostaValidador := TWiBiRespostaValidador.Create;

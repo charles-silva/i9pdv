@@ -51,6 +51,7 @@ type
     gofp_codigo      : Integer;
     gofp_descricao   : String;
     gofp_cartao      : boolean;
+    gofp_pix         : boolean;
     gofp_debito      : boolean;
     goSomenteDinheiro: boolean;
   end;
@@ -162,6 +163,7 @@ begin
   gofp_codigo    := TListFormasPag(FrmPDV_FormasPag.lstListFormas.ItemFocused.Data).fp_codigo;
   gofp_descricao := TListFormasPag(FrmPDV_FormasPag.lstListFormas.ItemFocused.Data).fp_descricao;
   gofp_cartao    := TListFormasPag(FrmPDV_FormasPag.lstListFormas.ItemFocused.Data).fp_cartao;
+  gofp_pix       := TListFormasPag(FrmPDV_FormasPag.lstListFormas.ItemFocused.Data).fp_pix;
   gofp_debito    := TListFormasPag(FrmPDV_FormasPag.lstListFormas.ItemFocused.Data).fp_debito;
   if gofp_codigo > 0 then
     ModalResult := mrOk;
