@@ -100,7 +100,7 @@ begin
           for I := 0 to FrmPDV.ComponentCount - 1 do
             if Components[I].Tag = 98 then
             begin
-              TControl(Components[I]).Parent  := cxTabSheet1;
+              TControl(Components[I]).Parent  := cxtabPrincipal;
               TControl(Components[I]).Visible := true;
             end;
         end

@@ -54,7 +54,7 @@ type
     lblLastSync: TLabel;
     Label4: TLabel;
     cxPageControl1: TcxPageControl;
-    cxTabSheet1: TcxTabSheet;
+    cxtabPrincipal: TcxTabSheet;
     cxTabSheet2: TcxTabSheet;
     shp2: TShape;
     shp3: TShape;
@@ -580,11 +580,17 @@ type
     procedure existNotasContigencia;
     function EfetuarPagamentoTEF(const ANumeroFiscal: String; AValor: Currency; ACartaoDebito: Boolean): Boolean;
     function EfetuarPagamentoTEFPix(const ANumeroFiscal: String; AValor: Currency): Boolean;
+    procedure ConfirmarTransacaoTEF;
+    procedure DesfazerTransacaoTEF;
     function EstornarTransacaoTEF(const ANSU, ACodigoAutorizacao, ARede, AFinalizacao: String; ADataHora: TDateTime;
       AValor: Double): Boolean;
 
   var
     vcestoque, vcodusuario, vcPedido: string;
+    // Pnfp_id do pagamento TEF (cart�o/Pix) autorizado mas ainda n�o confirmado
+    // (aguardando o cupom fiscal). S� � zerado por ConfirmarTransacaoTEF ou
+    // DesfazerTransacaoTEF -- ver doConfirmaPagamento em uPDV_NF.pas.
+    goTEFPnfp_idPendente: Integer;
   end;
 
 {$I WiBiPDVVersion.inc}
@@ -1024,7 +1030,11 @@ begin
                   if adStoreProc1.FindParam('@max') <> nil then
                     loResult := adStoreProc1.ParamByName('@max').AsInteger;
                   if loResult > 0 then
+                  begin
+                    if loPnfp_id = goTEFPnfp_idPendente then
+                      DesfazerTransacaoTEF;
                     lstListFormas.ItemFocused.Delete;
+                  end;
                   edValorForma.Setfocus;
 
                   loNF := goPDVClass.GetTotaisNF(goPnf_id);
@@ -1815,7 +1825,7 @@ begin
 
         if goPnf_id = 0 then
         begin
-          MessageBox(handle, 'Venda n�o iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
+          MessageBox(handle, 'Venda não iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
           exit;
         end;
         cxPageControl1.ActivePageIndex := 1;
@@ -1829,7 +1839,7 @@ begin
           exit;
         if goPnf_id = 0 then
         begin
-          MessageBox(handle, 'Venda n�o iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
+          MessageBox(handle, 'Venda não iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
           exit;
         end;
         doSetModoCancela;
@@ -3373,12 +3383,12 @@ begin
     edpnf_motivo_rejeicao.Visible := goListResendMode;
     if goListResendMode then
     begin
-      sqlCmd         := sqlContigencia;
+      sqlCmd                  := sqlContigencia;
       cxgrdReimpressao.Height := 340;
     end
     else
     begin
-      sqlCmd         := sqlVendasDia;
+      sqlCmd                  := sqlVendasDia;
       cxgrdReimpressao.Height := 476;
     end;
 
@@ -3509,7 +3519,7 @@ begin
   end;
   for i := 0 to self.ComponentCount - 1 do
     if Components[i].Tag = idx then
-      TControl(Components[i]).Parent := cxTabSheet1;
+      TControl(Components[i]).Parent := cxtabPrincipal;
   VisibleComponentes(self, idx);
 end;
 
@@ -3829,7 +3839,10 @@ begin
   ACBrTEFAPI1.TratamentoTransacaoInicializacao         := tefopiProcessarPendentes;
   ACBrTEFAPI1.DadosAutomacao.AutoAtendimento           := false;
   ACBrTEFAPI1.DadosAutomacao.ImprimeViaClienteReduzida := false;
-  ACBrTEFAPI1.ConfirmarTransacaoAutomaticamente        := true;
+  // Confirma��o (CNF) � disparada manualmente por ConfirmarTransacaoTEF, s�
+  // depois que o cupom fiscal for autorizado -- ver doNFFechamento/
+  // doConfirmaPagamento em uPDV_NF.pas.
+  ACBrTEFAPI1.ConfirmarTransacaoAutomaticamente := false;
 
   ACBrTEFAPI1.DadosAutomacao.SuportaDesconto   := true;
   ACBrTEFAPI1.DadosAutomacao.SuportaSaque      := false;
@@ -3868,6 +3881,7 @@ begin
   doTEFExibirMensagem('Ativando TEF...');
   ConfigurarTEF;
   ACBrTEFAPI1.Inicializar;
+ // doTEFExibirMensagem('TEF Ativo...');
 end;
 
 procedure TFrmPDV.IniciarContadorTEF;
@@ -4247,16 +4261,16 @@ begin
       try
         try
           AtivarTEF;
-          ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
-          if FCancelarTEF then
-            doTEFExibirMensagem('Ativa��o do TEF cancelada pelo operador.')
-          else if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
-            doTEFExibirMensagem('TEF iniciado com sucesso.')
-          else
-          begin
-            if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
-              doTEFExibirMensagem('Erro ao iniciar TEF');
-          end;
+          // ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
+          // if FCancelarTEF then
+          // doTEFExibirMensagem('Ativa��o do TEF cancelada pelo operador.')
+          // else if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
+          // doTEFExibirMensagem('TEF iniciado com sucesso.')
+          // else
+          // begin
+          // if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
+          // doTEFExibirMensagem('Erro ao iniciar TEF');
+          // end;
         except
           on e: exception do
             doTEFExibirMensagem('Falha ao ativar TEF' + sLineBreak + e.Message);
@@ -4282,8 +4296,8 @@ end;
 // Application.ProcessMessages, que continua bombeando as mensagens
 // necess�rias pro TThread.Synchronize da thread de trabalho funcionar.
 function TFrmPDV.EfetuarPagamentoTEFComum(const ANumeroFiscal: String; AValor: Currency;
-  AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
-  AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
+AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
+AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
 var
   vThread        : TThread;
   vConcluido, vOk: Boolean;
@@ -4367,6 +4381,31 @@ begin
   result := EfetuarPagamentoTEFComum(ANumeroFiscal, AValor, tefmpCarteiraVirtual, [], tefmfAVista, 0);
 end;
 
+// Confirma (CNF) a �ltima transa��o TEF autorizada, ap�s o cupom fiscal ter
+// sido emitido com sucesso. Chamada pelo hook AAntesImprimir de
+// doNFFechamento, antes da impress�o do DANFE/comprovante -- ver
+// doConfirmaPagamento em uPDV_NF.pas.
+procedure TFrmPDV.ConfirmarTransacaoTEF;
+begin
+  ACBrTEFAPI1.FinalizarTransacao(tefstsSucessoAutomatico);
+  goTEFPnfp_idPendente := 0;
+end;
+
+// Desfaz (NCN) a transa��o TEF autorizada e ainda n�o confirmada
+// (goTEFPnfp_idPendente). N�o � mais chamada automaticamente s� porque o
+// cupom fiscal falhou em fechar -- a autoriza��o fica pendente at� o
+// pagamento ser exclu�do da lstListFormas ou a venda ser cancelada (fun��o
+// 202), que s�o os �nicos pontos que efetivamente chamam este m�todo -- ver
+// doConfirmaPagamento em uPDV_NF.pas, o handler VK_DELETE em uFrmPDV.pas e
+// doSetModoCancela em uPDV_SetModos.pas. Mais leve que EstornarTransacaoTEF
+// (que faz um estorno completo junto � adquirente): como a transa��o nunca
+// chegou a ser confirmada, n�o h� o que estornar.
+procedure TFrmPDV.DesfazerTransacaoTEF;
+begin
+  ACBrTEFAPI1.FinalizarTransacao(tefstsErroDiverso);
+  goTEFPnfp_idPendente := 0;
+end;
+
 // Estorna uma transa��o TEF j� aprovada, usado quando o pagamento no cart�o
 // foi aceito mas a venda n�o pôde ser gravada/finalizada localmente (ver
 // doConfirmaPagamento em uPDV_NF.pas) -- evita cobrar o cliente sem
@@ -4439,8 +4478,7 @@ begin
     goTerminal.Impressora.pimp_handshake,                               //
     goTerminal.Impressora.pimp_hardflow,                                //
     goTerminal.Impressora.pimp_softflow, goTerminal.Impressora.pimp_colunas, goTerminal.Impressora.pimp_linhas,
-    goTerminal.Impressora.pimp_espacos
-    );
+    goTerminal.Impressora.pimp_espacos);
 end;
 
 procedure TFrmPDV.doSATSendAllPays;

@@ -14,7 +14,7 @@ procedure doSetModoCancelaItem(const aDisable: Boolean = false; const ATipoMsg: 
 
 implementation
 
-{ Métodos Set }
+{ Mï¿½todos Set }
 
 uses uFrmPDV, uPDV_SetValores, uPDV_NF, uPDVLib, uFrmPDV_Autorizacao, uFrmPDV_DModule_DS, uFrmPDV_DModule,
   Vcl.Dialogs;
@@ -116,7 +116,7 @@ begin
     begin
       loResultMsg := idNO;
       if (goIdxCancel > 21) and goCancelItemMode then
-        loResultMsg := MessageBox(handle, PChar('Confirmar exclusão do iten(s) marcado(s) ?'), 'I9 PDV',
+        loResultMsg := MessageBox(handle, PChar('Confirmar exclusï¿½o do iten(s) marcado(s) ?'), 'I9 PDV',
           MB_ICONQUESTION + ATipoMsg + MB_DEFBUTTON1);
       case loResultMsg of
         idNO:
@@ -152,7 +152,7 @@ begin
       lblMsgRapida.Visible := false;
 
       FrmPDV_DModule_DS.dsItensDelete.close;
-      { Consulta se há nota fiscal em andamento }
+      { Consulta se hï¿½ nota fiscal em andamento }
       loNF := goPDVClass.GetNF(goPterm_id, 0);
 
       try
@@ -227,6 +227,11 @@ begin
 
           if adStoreProc1.FindParam('@max') <> nil then
             loResult := adStoreProc1.ParamByName('@max').AsInteger;
+
+          { venda cancelada (funï¿½ï¿½o 202): desfaz a autorizaï¿½ï¿½o TEF ainda
+            pendente, se houver -- ver goTEFPnfp_idPendente em uFrmPDV.pas }
+          if goTEFPnfp_idPendente > 0 then
+            DesfazerTransacaoTEF;
         end;
       except
         on E: Exception do

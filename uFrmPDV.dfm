@@ -85957,7 +85957,7 @@ object FrmPDV: TFrmPDV
     Font.Style = []
     ParentFont = False
     TabOrder = 0
-    Properties.ActivePage = cxTabSheet1
+    Properties.ActivePage = cxtabPrincipal
     Properties.CustomButtons.Buttons = <>
     OnChange = cxPageControl1Change
     OnPageChanging = cxPageControl1PageChanging
@@ -85965,8 +85965,8 @@ object FrmPDV: TFrmPDV
     ClientRectLeft = 4
     ClientRectRight = 1109
     ClientRectTop = 24
-    object cxTabSheet1: TcxTabSheet
-      Caption = 'cxTabSheet1'
+    object cxtabPrincipal: TcxTabSheet
+      Caption = '``'
       ImageIndex = 0
       DesignSize = (
         1105

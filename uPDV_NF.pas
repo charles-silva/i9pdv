@@ -20,7 +20,7 @@ function doAbreFechaCaixaOperador(aus_codigo: Integer; aEncerra: Boolean; aAutor
 
 procedure doNFSituacaoFechamento;
 
-function doNFFechamento: Boolean;
+function doNFFechamento(AAntesImprimir: TProc = nil): Boolean;
 
 procedure doAplicarDesconto;
 
@@ -345,7 +345,7 @@ begin
     'where pnfi_id = ' + IntToStr(Pedido));
 end;
 
-function doNFFechamento: Boolean;
+function doNFFechamento(AAntesImprimir: TProc = nil): Boolean;
 var
   loNF                   : TNF;
   loResult               : Integer;
@@ -429,7 +429,10 @@ begin
             dsVendasItens.active := true;
             dsVendasPags.close;
             dsVendasPags.active := true;
+            if Assigned(AAntesImprimir) then
+              AAntesImprimir;
             doPrintVenda;
+            FrmPDV.lblTEFAviso.Caption := 'Caixa livre';
           end;
         end;
 {$ENDREGION}
@@ -451,8 +454,11 @@ begin
                 FrmPDV_DModule.ADConnection1.Rollback;
               exit;
             end;
+            if Assigned(AAntesImprimir) then
+              AAntesImprimir;
             doPrintNFCe;
             doPrintTEF(goPnf_id);
+            lblTEFAviso.Caption := 'Caixa livre';
             existNotasContigencia;
 
             // updateEstoqueFical(goPnf_id, QuotedStr(loSendCFe.ChaveAcesso), loSendCFe.Sessao,
@@ -755,11 +761,6 @@ var
   vValorTotal            : Currency;
   // campos do cart�o
   loCodOperadora: Integer;
-  // dados da resposta TEF, guardados s� para um eventual estorno
-  loCodigoAutorizacaoTEF    : string;
-  loDataHoraTransacaoHostTEF: TDateTime;
-  loFinalizacaoTEF          : string;
-  loValorTotalTEF           : Double;
 begin
 
   with FrmPDV do
@@ -799,28 +800,30 @@ begin
               loParcelas                 := QtdParcelas.ToString;
               loComprovante1aVia         := ImagemComprovante1aVia.Text;
               loComprovante2aVia         := ImagemComprovante2aVia.Text;
-              loCodigoAutorizacaoTEF     := CodigoAutorizacaoTransacao;
-              loDataHoraTransacaoHostTEF := DataHoraTransacaoHost;
-              loFinalizacaoTEF           := Finalizacao;
-              loValorTotalTEF            := ValorTotal;
             end;
 
             loPnfp_id := doAdicFormaNF(lofp_codigo, 0, loWiBiRespostaValidador, loPOSManual, loadq_id, lopos_id,
               loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
             if loPnfp_id = 0 then
             begin
-              { pagamento j� aprovado no cart�o, mas falhou ao gravar localmente -> estornar }
-              FrmPDV.EstornarTransacaoTEF(loNSU_HOSTTEF, loCodigoAutorizacaoTEF, loNSU_BANDEIRA, loFinalizacaoTEF,
-                loDataHoraTransacaoHostTEF, loValorTotalTEF);
+              { pagamento j� aprovado no cart�o, mas falhou ao gravar localmente -> desfazer (TEF ainda pendente) }
+              FrmPDV.DesfazerTransacaoTEF;
               exit;
             end;
             doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
+            FrmPDV.goTEFPnfp_idPendente := loPnfp_id;
 
-            if not doNFFechamento then
+            if not doNFFechamento(
+              procedure
+              begin
+                FrmPDV.ConfirmarTransacaoTEF;
+              end) then
             begin
-              { nota n�o finalizada (SEFAZ/SAT/impress�o) ap�s d�bito aprovado -> estornar }
-              FrmPDV.EstornarTransacaoTEF(loNSU_HOSTTEF, loCodigoAutorizacaoTEF, loNSU_BANDEIRA, loFinalizacaoTEF,
-                loDataHoraTransacaoHostTEF, loValorTotalTEF);
+              { nota n�o finalizada (SEFAZ/SAT/impress�o) ap�s d�bito aprovado: a
+                autoriza��o TEF fica pendente (n�o desfaz aqui) -- o operador pode
+                tentar fechar a nota novamente, excluir o pagamento da
+                lstListFormas ou cancelar a venda (fun��o 202), que s�o os pontos
+                que efetivamente desfazem a transa��o }
               exit;
             end;
             doNFSituacaoFechamento;
@@ -842,28 +845,30 @@ begin
               loParcelas                 := QtdParcelas.ToString;
               loComprovante1aVia         := ImagemComprovante1aVia.Text;
               loComprovante2aVia         := ImagemComprovante2aVia.Text;
-              loCodigoAutorizacaoTEF     := CodigoAutorizacaoTransacao;
-              loDataHoraTransacaoHostTEF := DataHoraTransacaoHost;
-              loFinalizacaoTEF           := Finalizacao;
-              loValorTotalTEF            := ValorTotal;
             end;
 
             loPnfp_id := doAdicFormaNF(lofp_codigo, 0, loWiBiRespostaValidador, loPOSManual, loadq_id, lopos_id,
               loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
             if loPnfp_id = 0 then
             begin
-              { pagamento j� aprovado no Pix, mas falhou ao gravar localmente -> estornar }
-              FrmPDV.EstornarTransacaoTEF(loNSU_HOSTTEF, loCodigoAutorizacaoTEF, loNSU_BANDEIRA, loFinalizacaoTEF,
-                loDataHoraTransacaoHostTEF, loValorTotalTEF);
+              { pagamento j� aprovado no Pix, mas falhou ao gravar localmente -> desfazer (TEF ainda pendente) }
+              FrmPDV.DesfazerTransacaoTEF;
               exit;
             end;
             doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
+            FrmPDV.goTEFPnfp_idPendente := loPnfp_id;
 
-            if not doNFFechamento then
+            if not doNFFechamento(
+              procedure
+              begin
+                FrmPDV.ConfirmarTransacaoTEF;
+              end) then
             begin
-              { nota n�o finalizada (SEFAZ/SAT/impress�o) ap�s Pix aprovado -> estornar }
-              FrmPDV.EstornarTransacaoTEF(loNSU_HOSTTEF, loCodigoAutorizacaoTEF, loNSU_BANDEIRA, loFinalizacaoTEF,
-                loDataHoraTransacaoHostTEF, loValorTotalTEF);
+              { nota n�o finalizada (SEFAZ/SAT/impress�o) ap�s Pix aprovado: a
+                autoriza��o TEF fica pendente (n�o desfaz aqui) -- o operador pode
+                tentar fechar a nota novamente, excluir o pagamento da
+                lstListFormas ou cancelar a venda (fun��o 202), que s�o os pontos
+                que efetivamente desfazem a transa��o }
               exit;
             end;
             doNFSituacaoFechamento;

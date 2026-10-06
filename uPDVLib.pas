@@ -732,8 +732,8 @@ var
   loNFPag : TNFPag;
 begin
   if aPnf_id = 0 then
-    goPDVConnection.GetQuery.Open('SELECT * FROM pdv.vw_nota_fiscal pnf WHERE em_codigo = ' + IntToStr(goem_codigo) +
-      ' and pterm_id = ' + QuotedStr(aPterm_id) + ' and pnf_status = 1')
+    goPDVConnection.GetQuery.Open('SELECT top 1 * FROM pdv.vw_nota_fiscal pnf WHERE em_codigo = ' + IntToStr(goem_codigo) +
+      ' and pterm_id = ' + QuotedStr(aPterm_id) + ' and pnf_status = 1 order by pnf_id desc ')
   else
     goPDVConnection.GetQuery.Open('SELECT * FROM pdv.vw_nota_fiscal pnf WHERE pnf_id = ' +
       QuotedStr(IntToStr(aPnf_id)));
