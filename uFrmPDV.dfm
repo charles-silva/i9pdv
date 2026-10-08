@@ -90851,7 +90851,7 @@ object FrmPDV: TFrmPDV
     QuandoPerguntarCampo = ACBrTEFAPI1QuandoPerguntarCampo
     QuandoExibirQRCode = ACBrTEFAPI1QuandoExibirQRCode
     Left = 64
-    Top = 240
+    Top = 232
   end
   object TimerTEFContador: TTimer
     Enabled = False

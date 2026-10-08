@@ -1,11 +1,13 @@
-unit uFrmPDV_TEF_Campo;
+﻿unit uFrmPDV_TEF_Campo;
 
 interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.ExtCtrls, Vcl.StdCtrls,
-  ACBrTEFAPI;
+  ACBrTEFAPI, dxSkinsCore, dxSkinDarkroom, dxSkinDarkSide,
+  dxSkinDevExpressDarkStyle, cxGraphics, cxLookAndFeels, cxLookAndFeelPainters,
+  Vcl.Menus, cxButtons;
 
 type
   TFrmPDV_TEF_Campo = class(TForm)
@@ -14,6 +16,9 @@ type
     lblTitle: TLabel;
     lblMsgRapida: TLabel;
     edResposta: TEdit;
+    cxButton1: TcxButton;
+    cxButton2: TcxButton;
+    cxButton3: TcxButton;
     procedure FormShow(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edRespostaKeyPress(Sender: TObject; var Key: Char);

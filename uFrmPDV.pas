@@ -584,6 +584,7 @@ type
     procedure DesfazerTransacaoTEF;
     function EstornarTransacaoTEF(const ANSU, ACodigoAutorizacao, ARede, AFinalizacao: String; ADataHora: TDateTime;
       AValor: Double): Boolean;
+    procedure doImprimirComprovantesTEFAdministrativo;
 
   var
     vcestoque, vcodusuario, vcPedido: string;
@@ -3996,6 +3997,14 @@ begin
 
   MsgFinal := RespostaTEF.TextoEspecialOperador;
 
+  if (RespostaTEF.Header <> CHEADER_PAGAMENTO) then
+  begin
+    if (not ACBrTEFAPI1.ConfirmarTransacaoAutomaticamente) and RespostaTEF.Confirmar then
+      ACBrTEFAPI1.FinalizarTransacao(tefstsSucessoAutomatico);
+
+    doImprimirComprovantesTEFAdministrativo;
+  end;
+
   // Garante que a tela do QR Code do Pix n�o fique presa na tela, caso o TEF
   // n�o tenha enviado um QuandoExibirQRCode('') ao concluir a opera��o.
   FreeAndNil(FFrmTEFQRCode);
@@ -4010,9 +4019,10 @@ end;
 procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarCampo(DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string;
 var Validado, Cancelado: Boolean);
 var
-  vResposta  : string;
-  vCancelado : Boolean;
-  DoPerguntar: TThreadProcedure;
+  vResposta            : string;
+  vCancelado           : Boolean;
+  DoPerguntar          : TThreadProcedure;
+  DoPerguntarSupervisor: TThreadProcedure;
 begin
   vResposta  := Resposta;
   vCancelado := Cancelado;
@@ -4041,10 +4051,41 @@ begin
       end;
     end;
 
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-    TThread.Synchronize(nil, DoPerguntar)
+  // Quando o TEF pede "Forne�a o c�digo do supervisor", reaproveita a tela de
+  // login/autoriza��o j� usada em cancelamento de venda/sangria/abertura de
+  // caixa etc (TFrmPDV_Autorizacao) em vez do teclado gen�rico
+  // (TFrmPDV_TEF_Campo): o operador informa matr�cula+senha, e a matr�cula
+  // validada (edUsuario.Text) � devolvida ao TEF como resposta do campo.
+  DoPerguntarSupervisor := procedure
+    begin
+      FrmPDV_Autorizacao := TFrmPDV_Autorizacao.Create(self);
+      try
+        FrmPDV_Autorizacao.lblTitle.Caption := DefinicaoCampo.TituloPergunta;
+        FrmPDV_Autorizacao.goParamId        := 0;
+        vCancelado                          := (FrmPDV_Autorizacao.ShowModal <> mrOK);
+        if not vCancelado then
+          vResposta := FrmPDV_Autorizacao.edUsuario.Text;
+      finally
+        FrmPDV_Autorizacao.Destroy;
+        FrmPDV_Autorizacao := nil;
+      end;
+    end;
+
+  if SameText(Trim(DefinicaoCampo.TituloPergunta), 'Forne�a o c�digo do supervisor') or
+    SameText(Trim(DefinicaoCampo.TituloPergunta), 'Forneca o codigo do supervisor') then
+  begin
+    if TThread.CurrentThread.ThreadID <> MainThreadID then
+      TThread.Synchronize(nil, DoPerguntarSupervisor)
+    else
+      DoPerguntarSupervisor();
+  end
   else
-    DoPerguntar();
+  begin
+//  if TThread.CurrentThread.ThreadID <> MainThreadID then
+//    TThread.Synchronize(nil, DoPerguntar)
+//  else
+//    DoPerguntar();
+  end;
 
   Resposta  := vResposta;
   Validado  := false;
@@ -4069,11 +4110,6 @@ begin
     ItemSelecionado := -1;
     exit;
   end;
-  // if (Opcoes.Count = 2) then
-  // begin
-  // ItemSelecionado := 0;
-  // exit;
-  // end;
 
   vItemSelecionado := ItemSelecionado;
 
@@ -4428,6 +4464,60 @@ begin
   else
     MessageBox(handle, PChar('ATEN��O: falha ao estornar automaticamente a transa��o TEF (NSU ' + ANSU +
       '). Verifique manualmente com a adquirente.'), 'I9 PDV', MB_ICONERROR);
+end;
+
+// Imprime o(s) comprovante(s) TEF de uma opera��o administrativa (fun��o 117
+// -- menu de fun��es diversas, reimpress�o, cancelamento da �ltima transa��o
+// etc.), chamada por ACBrTEFAPI1QuandoFinalizarOperacao. Essas opera��es n�o
+// t�m pnf_id/pagamento gravado no banco, por isso n�o usam doPrintTEF (que �
+// DB-bound); em vez disso imprimem direto via ESC/POS usando o ACBrPosPrinter1
+// do pr�prio FrmPDV (at� agora n�o configurado/usado), com a mesma l�gica de
+// TFrmPDV_SAT.ImprimirTodosComprovantes / TFormPrincipal.ImprimirTodosComprovantes
+// (demo oficial do ACBr) -- inclusive as tags </zera>/</lf></corte_total> que
+// garantem o corte do papel ao final de cada via.
+procedure TFrmPDV.doImprimirComprovantesTEFAdministrativo;
+var
+  i     : Integer;
+  loResp: TACBrTEFResp;
+
+  procedure ImprimirComprovante(const ATexto: String);
+  begin
+    if ATexto = '' then
+      exit;
+    ACBrPosPrinter1.Imprimir('</zera>' + ATexto + '</lf></corte_total>');
+  end;
+
+begin
+  try
+    with ACBrPosPrinter1 do
+    begin
+      Desativar;
+      Modelo             := TACBrPosPrinterModelo(goTerminal.Impressora.pimp_modelo);
+      PaginaDeCodigo     := TACBrPosPaginaCodigo(pc860);
+      Porta              := goTerminal.Impressora.pimp_port;
+      ColunasFonteNormal := goTerminal.Impressora.pimp_colunas;
+      LinhasEntreCupons  := goTerminal.Impressora.pimp_linhas;
+      EspacoEntreLinhas  := goTerminal.Impressora.pimp_espacos;
+      Ativar;
+    end;
+
+    try
+      for i := 0 to ACBrTEFAPI1.RespostasTEF.Count - 1 do
+      begin
+        loResp := ACBrTEFAPI1.RespostasTEF[i];
+        if not Assigned(loResp) then
+          continue;
+        if (loResp.ImagemComprovante2aVia.Count > 0) then
+          ImprimirComprovante(loResp.ImagemComprovante2aVia.Text);
+        if (loResp.ImagemComprovante1aVia.Count > 0) then
+          ImprimirComprovante(loResp.ImagemComprovante1aVia.Text);
+      end;
+    finally
+      ACBrPosPrinter1.Desativar;
+    end;
+  except
+    { falha ao imprimir comprovante administrativo n�o deve travar o fluxo TEF }
+  end;
 end;
 
 procedure TFrmPDV.doSATLoad;

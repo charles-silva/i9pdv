@@ -57,7 +57,7 @@ begin
   goUser := goPDVClass.GetUser(StrToIntDef(edUsuario.Text, 0));
   if goUser = nil then
   begin
-    MessageBox(handle, 'Usuário não encontrado', 'I9 PDV', MB_ICONEXCLAMATION);
+    MessageBox(handle, 'Usuï¿½rio nï¿½o encontrado', 'I9 PDV', MB_ICONEXCLAMATION);
     edUsuario.SetFocus;
     edUsuario.Clear;
     exit;
@@ -100,7 +100,7 @@ begin
                 ModalResult := mrOk
               else
               begin
-                MessageBox(handle, 'Não Autorizado', 'I9 PDV', MB_ICONEXCLAMATION);
+                MessageBox(handle, 'Nï¿½o Autorizado', 'I9 PDV', MB_ICONEXCLAMATION);
                 edUsuario.SetFocus;
                // ModalResult := mrOk
               end;
@@ -117,7 +117,10 @@ var
   lopm_descricao: String;
 begin
   dsParam.Open('select pm_descricao from t_parametrizacao where pm_id = ' + goParamId.toString);
-  lopm_descricao   := goParamId.toString + ' - ' + dsParam.FieldByname('pm_descricao').AsString;
+  if dsParam.IsEmpty then
+    lopm_descricao := goParamId.toString + ' - Autorizaï¿½ï¿½o'
+  else
+    lopm_descricao := goParamId.toString + ' - ' + dsParam.FieldByname('pm_descricao').AsString;
   lblParam.Caption := lopm_descricao;
   Shape16.Brush.Color:=FrmPDV.CordoMes.Color;
 end;
