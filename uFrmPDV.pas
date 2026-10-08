@@ -34,7 +34,7 @@ uses
   Data.Win.ADODB, Vcl.Grids, Vcl.DBGrids, Vcl.Menus, cxButtons, dxDateRanges,
   dxScrollbarAnnotations, dxSkinDarkroom, dxSkinDarkSide,
   dxSkinDevExpressDarkStyle, cxGeometry, dxFramedControl, dxPanel,
-  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF_QRCode, uFrmPDV_TEF_Campo,
+  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF_QRCode, uFrmPDV_TEF_Campo, ACBrTEFAPICliSiTef,
   ACBrTEFComum;
 
 type
@@ -3882,7 +3882,7 @@ begin
   doTEFExibirMensagem('Ativando TEF...');
   ConfigurarTEF;
   ACBrTEFAPI1.Inicializar;
- // doTEFExibirMensagem('TEF Ativo...');
+  // doTEFExibirMensagem('TEF Ativo...');
 end;
 
 procedure TFrmPDV.IniciarContadorTEF;
@@ -3894,12 +3894,6 @@ end;
 
 procedure TFrmPDV.FinalizarContadorTEF;
 begin
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-  begin
-    TThread.Synchronize(nil, FinalizarContadorTEF);
-    exit;
-  end;
-
   TimerTEFContador.Enabled := false;
 
   // Reenvia a mensagem atual com contador = 0, para que o sufixo "[N]" que
@@ -3909,11 +3903,11 @@ begin
 end;
 
 // Baseado no tempo real decorrido (GetTickCount) em vez de contar "ticks" do
-// TimerTEFContador, pois enquanto AtivarTEF/EfetuarAdministrativa est�o em
-// execu��o (chamada s�ncrona/bloqueante dentro da thread de trabalho) a fila
-// de mensagens do Windows pode n�o ser processada a tempo. Por isso essa
-// rotina tamb�m � chamada a partir de doTEFExibirMensagem, acionada ao vivo
-// pelos callbacks do ACBrTEFAPI1 durante o processamento.
+// TimerTEFContador, pois enquanto AtivarTEF/EfetuarPagamento/
+// EfetuarAdministrativa est�o em execu��o (chamada s�ncrona/bloqueante na
+// main thread) o TimerTEFContador n�o dispara no intervalo certo. Por isso
+// essa rotina tamb�m � chamada a partir de doTEFExibirMensagem, acionada ao
+// vivo pelos callbacks do ACBrTEFAPI1 durante o processamento.
 procedure TFrmPDV.AtualizarContadorTEF;
 var
   vRestante: Integer;
@@ -3942,21 +3936,11 @@ end;
 
 // Atualiza o lblTEFAviso com a mensagem e o valor atual do contador (o
 // sufixo "[N]" some quando o valor for 0). Toda a regra de consulta (texto +
-// quando/quanto contar) vive aqui. Auto-sincroniza com a main thread, pois �
-// chamada diretamente de dentro da thread de trabalho (AtivarTEF, callbacks
-// do ACBrTEFAPI1, tratamento de erro).
+// quando/quanto contar) vive aqui. AtivarTEF/EfetuarPagamento/
+// EfetuarAdministrativa chamam isso direto na main thread (sem thread de
+// trabalho), igual ao demo oficial do ACBr.
 procedure TFrmPDV.doTEFExibirMensagem(const AMsg: String);
 begin
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        doTEFExibirMensagem(AMsg);
-      end);
-    exit;
-  end;
-
   FMensagemTEF := AMsg;
   AtualizarContadorTEF;
 
@@ -3985,16 +3969,6 @@ procedure TFrmPDV.ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF: TACBrTEFResp);
 var
   MsgFinal: String;
 begin
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF);
-      end);
-    exit;
-  end;
-
   MsgFinal := RespostaTEF.TextoEspecialOperador;
 
   if (RespostaTEF.Header <> CHEADER_PAGAMENTO) then
@@ -4014,96 +3988,64 @@ end;
 // (ex.: quantidade de parcelas, ap�s ACBrTEFAPI1QuandoPerguntarMenu perguntar
 // se � � vista/parcelado). Validado := False deixa o pr�prio ACBrTEFAPI
 // validar o conte�do (DefinicaoCampo.ValidacaoDado), como no demo oficial.
-// Mesma thread de trabalho de QuandoPerguntarMenu -- precisa sincronizar
-// com a main thread antes de mexer em VCL.
+// EfetuarPagamento/EfetuarAdministrativa chamam isso direto na main thread
+// (sem thread de trabalho), igual ao demo oficial do ACBr -- por isso os
+// par�metros var (Resposta, Cancelado) s�o atribu�dos diretamente.
 procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarCampo(DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string;
 var Validado, Cancelado: Boolean);
-var
-  vResposta            : string;
-  vCancelado           : Boolean;
-  DoPerguntar          : TThreadProcedure;
-  DoPerguntarSupervisor: TThreadProcedure;
 begin
-  vResposta  := Resposta;
-  vCancelado := Cancelado;
-
-  // Par�metros var/out (Resposta, Validado, Cancelado) n�o podem ser
-  // capturados por um m�todo an�nimo (E2555) -- por isso o trabalho � feito
-  // sobre as vari�veis locais vResposta/vCancelado, copiadas de volta no final.
-  DoPerguntar := procedure
-    var
-      FormCampo: TFrmPDV_TEF_Campo;
-    begin
-      FormCampo := TFrmPDV_TEF_Campo.Create(self);
-      try
-        FormCampo.Titulo        := DefinicaoCampo.TituloPergunta;
-        FormCampo.TamanhoMinimo := DefinicaoCampo.TamanhoMinimo;
-        FormCampo.TamanhoMaximo := DefinicaoCampo.TamanhoMaximo;
-        FormCampo.Ocultar       := DefinicaoCampo.OcultarDadosDigitados;
-        FormCampo.TipoDeEntrada := DefinicaoCampo.TipoDeEntrada;
-        FormCampo.Resposta      := DefinicaoCampo.ValorInicial;
-
-        vCancelado := (FormCampo.ShowModal <> mrOK);
-        if not vCancelado then
-          vResposta := FormCampo.Resposta;
-      finally
-        FormCampo.Free;
-      end;
-    end;
+  Validado := false;
 
   // Quando o TEF pede "Forne�a o c�digo do supervisor", reaproveita a tela de
   // login/autoriza��o j� usada em cancelamento de venda/sangria/abertura de
   // caixa etc (TFrmPDV_Autorizacao) em vez do teclado gen�rico
   // (TFrmPDV_TEF_Campo): o operador informa matr�cula+senha, e a matr�cula
   // validada (edUsuario.Text) � devolvida ao TEF como resposta do campo.
-  DoPerguntarSupervisor := procedure
-    begin
-      FrmPDV_Autorizacao := TFrmPDV_Autorizacao.Create(self);
-      try
-        FrmPDV_Autorizacao.lblTitle.Caption := DefinicaoCampo.TituloPergunta;
-        FrmPDV_Autorizacao.goParamId        := 0;
-        vCancelado                          := (FrmPDV_Autorizacao.ShowModal <> mrOK);
-        if not vCancelado then
-          vResposta := FrmPDV_Autorizacao.edUsuario.Text;
-      finally
-        FrmPDV_Autorizacao.Destroy;
-        FrmPDV_Autorizacao := nil;
-      end;
-    end;
-
   if SameText(Trim(DefinicaoCampo.TituloPergunta), 'Forne�a o c�digo do supervisor') or
     SameText(Trim(DefinicaoCampo.TituloPergunta), 'Forneca o codigo do supervisor') then
   begin
-    if TThread.CurrentThread.ThreadID <> MainThreadID then
-      TThread.Synchronize(nil, DoPerguntarSupervisor)
-    else
-      DoPerguntarSupervisor();
-  end
-  else
-  begin
-//  if TThread.CurrentThread.ThreadID <> MainThreadID then
-//    TThread.Synchronize(nil, DoPerguntar)
-//  else
-//    DoPerguntar();
+    FrmPDV_Autorizacao := TFrmPDV_Autorizacao.Create(self);
+    try
+      FrmPDV_Autorizacao.lblTitle.Caption := DefinicaoCampo.TituloPergunta;
+      FrmPDV_Autorizacao.goParamId        := 0;
+      Cancelado                           := (FrmPDV_Autorizacao.ShowModal <> mrOK);
+      if not Cancelado then
+        Resposta := FrmPDV_Autorizacao.edUsuario.Text;
+    finally
+      FrmPDV_Autorizacao.Destroy;
+      FrmPDV_Autorizacao := nil;
+    end;
+    exit;
   end;
 
-  Resposta  := vResposta;
-  Validado  := false;
-  Cancelado := vCancelado;
+  // FormCampo := TFrmPDV_TEF_Campo.Create(self);
+  // try
+  //   FormCampo.Titulo              := DefinicaoCampo.TituloPergunta;
+  //   FormCampo.TamanhoMinimo       := DefinicaoCampo.TamanhoMinimo;
+  //   FormCampo.TamanhoMaximo       := DefinicaoCampo.TamanhoMaximo;
+  //   FormCampo.Ocultar             := DefinicaoCampo.OcultarDadosDigitados;
+  //   FormCampo.TipoDeEntrada       := DefinicaoCampo.TipoDeEntrada;
+  //   FormCampo.Resposta            := DefinicaoCampo.ValorInicial;
+  //   FormCampo.cxbtnVoltar.Visible := (ACBrTEFAPI1.TEF is TACBrTEFAPIClassCliSiTef);
+  //
+  //   Cancelado := (FormCampo.ShowModal <> mrOK);
+  //   if not Cancelado then
+  //     Resposta := FormCampo.Resposta;
+  // finally
+  //   FormCampo.Free;
+  // end;
 end;
 
-// Chamada a partir da thread de trabalho criada em doTEFConsultar/
-// EfetuarPagamentoTEF (mesma thread que roda EfetuarPagamento/
-// EfetuarAdministrativa) -- precisa sincronizar com a main thread antes de
-// criar/exibir a tela, pois VCL n�o � thread-safe. Agora dispara em toda
+// EfetuarPagamento/EfetuarAdministrativa chamam isso direto na main thread
+// (sem thread de trabalho), igual ao demo oficial do ACBr. Dispara em toda
 // venda no cr�dito (ver EfetuarPagamentoTEF, que envia Financiamento
 // indefinido para deixar o TEF perguntar � vista/parcelado/etc), n�o s�
 // nos casos raros de antes.
 procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarMenu(const Titulo: string; Opcoes: TStringList;
 var ItemSelecionado: Integer);
 var
-  vItemSelecionado: Integer;
-  DoPerguntar     : TThreadProcedure;
+  MR         : TModalResult;
+  FormMenuTEF: TFrmPDV_TEF_Operacoes;
 begin
   if (Opcoes.Count < 1) then
   begin
@@ -4111,44 +4053,26 @@ begin
     exit;
   end;
 
-  vItemSelecionado := ItemSelecionado;
+  FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
+  try
+    FormMenuTEF.Titulo            := Titulo;
+    FormMenuTEF.Opcoes            := Opcoes;
+    FormMenuTEF.UsaTeclasDeAtalho := (Copy(Opcoes[0], 1, 4) = '1 - ');
+    FormMenuTEF.ItemSelecionado   := ItemSelecionado;
 
-  // ItemSelecionado � par�metro var e n�o pode ser capturado por um m�todo
-  // an�nimo (E2555) -- por isso o trabalho � feito sobre a vari�vel local
-  // vItemSelecionado, copiada de volta no final.
-  DoPerguntar := procedure
-    var
-      MR         : TModalResult;
-      FormMenuTEF: TFrmPDV_TEF_Operacoes;
-    begin
-      FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
-      try
-        FormMenuTEF.Titulo            := Titulo;
-        FormMenuTEF.Opcoes            := Opcoes;
-        FormMenuTEF.UsaTeclasDeAtalho := (Copy(Opcoes[0], 1, 4) = '1 - ');
-        FormMenuTEF.ItemSelecionado   := vItemSelecionado;
+    MR := FormMenuTEF.ShowModal;
 
-        MR := FormMenuTEF.ShowModal;
-
-        case MR of
-          mrOK:
-            vItemSelecionado := FormMenuTEF.ItemSelecionado;
-          mrRetry:
-            vItemSelecionado := -2; // Voltar
-        else
-          vItemSelecionado := -1; // Cancelar
-        end;
-      finally
-        FormMenuTEF.Free;
-      end;
+    case MR of
+      mrOK:
+        ItemSelecionado := FormMenuTEF.ItemSelecionado;
+      mrRetry:
+        ItemSelecionado := -2; // Voltar
+    else
+      ItemSelecionado := -1; // Cancelar
     end;
-
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-    TThread.Synchronize(nil, DoPerguntar)
-  else
-    DoPerguntar();
-
-  ItemSelecionado := vItemSelecionado;
+  finally
+    FormMenuTEF.Free;
+  end;
 end;
 
 // Recebe cada linha de log interno do TEF (comunica��o com o pinpad,
@@ -4186,16 +4110,6 @@ var
   AStatus    : TACBrTEFStatusTransacao;
   vOpcoes    : TStringList;
 begin
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        ACBrTEFAPI1QuandoDetectarTransacaoPendente(RespostaTEF, MsgErro);
-      end);
-    exit;
-  end;
-
   FormMenuTEF := TFrmPDV_TEF_Operacoes.Create(self);
   vOpcoes     := TStringList.Create;
   try
@@ -4237,14 +4151,15 @@ begin
 end;
 
 // Chamado periodicamente pelo TEF enquanto aguarda uma a��o (cart�o no
-// pinpad, digita��o, etc), sempre na mesma thread de quem chamou
-// EfetuarPagamento/EfetuarAdministrativa (a thread de trabalho criada em
-// doTEFConsultar/EfetuarPagamentoTEF). S� consulta o flag setado pelo ESC do
-// operador (ver FormKeyDown) -- n�o mexe em VCL, ent�o n�o precisa
-// sincronizar com a main thread.
+// pinpad, digita��o, etc). EfetuarPagamento/EfetuarAdministrativa bloqueiam a
+// main thread (sem thread de trabalho), igual ao demo oficial do ACBr -- por
+// isso bombeia a fila de mensagens aqui (Application.ProcessMessages),
+// garantindo que a tela continue respondendo (e o ESC do operador, lido em
+// FormKeyDown, seja processado) enquanto a chamada estiver em andamento.
 procedure TFrmPDV.ACBrTEFAPI1QuandoEsperarOperacao(OperacaoAPI: TACBrTEFAPIOperacaoAPI; var Cancelar: Boolean);
 begin
   Cancelar := FCancelarTEF;
+  Application.ProcessMessages;
 end;
 
 // Exibe/atualiza o QR Code (Pix) numa tela pr�pria, criada dinamicamente.
@@ -4253,16 +4168,6 @@ end;
 // cancelado) -- por isso a tela s� � criada uma vez e fechada nesse aviso.
 procedure TFrmPDV.ACBrTEFAPI1QuandoExibirQRCode(const DadosQRCode: String);
 begin
-  if TThread.CurrentThread.ThreadID <> MainThreadID then
-  begin
-    TThread.Synchronize(nil,
-      procedure
-      begin
-        ACBrTEFAPI1QuandoExibirQRCode(DadosQRCode);
-      end);
-    exit;
-  end;
-
   if (DadosQRCode = '') then
   begin
     FreeAndNil(FFrmTEFQRCode);
@@ -4278,47 +4183,29 @@ begin
   FFrmTEFQRCode.ExibirQRCode(DadosQRCode);
 end;
 
+// AtivarTEF/EfetuarAdministrativa s�o chamadas direto na main thread (sem
+// thread de trabalho), igual ao demo oficial do ACBr. Enquanto rodam, o
+// operador pode cancelar com ESC (ver FormKeyDown), lido por
+// ACBrTEFAPI1QuandoEsperarOperacao -- que tamb�m bombeia a fila de mensagens
+// (Application.ProcessMessages) para a tela continuar respondendo.
 procedure TFrmPDV.doTEFConsultar;
-var
-  vThread: TThread;
 begin
   IniciarContadorTEF;
   FProcessandoTEF := true;
   FCancelarTEF    := false;
 
-  // AtivarTEF/EfetuarAdministrativa s�o chamadas s�ncronas/bloqueantes; rodando
-  // numa thread separada a main thread (e sua fila de mensagens) fica livre.
-  // doTEFExibirMensagem se auto-sincroniza com a main thread. Enquanto essa
-  // thread roda, o operador pode cancelar com ESC (ver FormKeyDown), lido
-  // por ACBrTEFAPI1QuandoEsperarOperacao.
-  vThread := TThread.CreateAnonymousThread(
-    procedure
-    begin
-      try
-        try
-          AtivarTEF;
-          // ACBrTEFAPI1.EfetuarAdministrativa(tefopTesteComunicacao);
-          // if FCancelarTEF then
-          // doTEFExibirMensagem('Ativa��o do TEF cancelada pelo operador.')
-          // else if ACBrTEFAPI1.UltimaRespostaTEF.Sucesso then
-          // doTEFExibirMensagem('TEF iniciado com sucesso.')
-          // else
-          // begin
-          // if (ACBrTEFAPI1.UltimaRespostaTEF.TextoEspecialOperador <> '') then
-          // doTEFExibirMensagem('Erro ao iniciar TEF');
-          // end;
-        except
-          on e: exception do
-            doTEFExibirMensagem('Falha ao ativar TEF' + sLineBreak + e.Message);
-        end;
-      finally
-        FProcessandoTEF := false;
-      end;
+  try
+    try
+      AtivarTEF;
+    except
+      on e: exception do
+        doTEFExibirMensagem('Falha ao ativar TEF' + sLineBreak + e.Message);
+    end;
+  finally
+    FProcessandoTEF := false;
+  end;
 
-      FinalizarContadorTEF;
-    end);
-  vThread.FreeOnTerminate := true;
-  vThread.Start;
+  FinalizarContadorTEF;
 end;
 
 // Efetua a cobran�a em cart�o no PinPad via ACBrTEFAPI1.EfetuarPagamento,
@@ -4327,16 +4214,16 @@ end;
 // Parcelas como 0, para que o pr�prio TEF pergunte ao operador -- via
 // ACBrTEFAPI1QuandoPerguntarMenu (� vista/parcelado/etc) e depois
 // ACBrTEFAPI1QuandoPerguntarCampo (quantidade de parcelas) -- exatamente como
-// no demo oficial do ACBr. Bloqueia a thread chamadora (a main thread,
-// chamada a partir de doConfirmaPagamento) com um la�o de
-// Application.ProcessMessages, que continua bombeando as mensagens
-// necess�rias pro TThread.Synchronize da thread de trabalho funcionar.
+// no demo oficial do ACBr. Chamada direto na main thread (sem thread de
+// trabalho) -- ela bloqueia a tela durante a transa��o, mas
+// ACBrTEFAPI1QuandoEsperarOperacao bombeia Application.ProcessMessages
+// enquanto espera, mantendo a tela respondendo e o ESC do operador
+// funcionando, igual ao demo oficial do ACBr.
 function TFrmPDV.EfetuarPagamentoTEFComum(const ANumeroFiscal: String; AValor: Currency;
 AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
 AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
 var
-  vThread        : TThread;
-  vConcluido, vOk: Boolean;
+  vOk: Boolean;
 begin
   result := false;
   if FProcessandoTEF then
@@ -4344,33 +4231,22 @@ begin
 
   FProcessandoTEF      := true;
   FCancelarTEF         := false;
-  vConcluido           := false;
   vOk                  := false;
   edValorForma.Enabled := false;
   try
     doTEFExibirMensagem('Processando pagamento...');
 
-    vThread := TThread.CreateAnonymousThread(
-      procedure
+    try
+      vOk := ACBrTEFAPI1.EfetuarPagamento(ANumeroFiscal, AValor, AModalidade, ACartoesAceitos, AFinanciamento,
+        AParcelas);
+      vOk := vOk and ACBrTEFAPI1.UltimaRespostaTEF.Sucesso and ACBrTEFAPI1.UltimaRespostaTEF.TransacaoAprovada;
+    except
+      on e: exception do
       begin
-        try
-          vOk := ACBrTEFAPI1.EfetuarPagamento(ANumeroFiscal, AValor, AModalidade, ACartoesAceitos, AFinanciamento,
-            AParcelas);
-          vOk := vOk and ACBrTEFAPI1.UltimaRespostaTEF.Sucesso and ACBrTEFAPI1.UltimaRespostaTEF.TransacaoAprovada;
-        except
-          on e: exception do
-          begin
-            vOk := false;
-            doTEFExibirMensagem('Falha na transa��o TEF' + sLineBreak + e.Message);
-          end;
-        end;
-        vConcluido := true;
-      end);
-    vThread.FreeOnTerminate := true;
-    vThread.Start;
-
-    while not vConcluido do
-      Application.ProcessMessages;
+        vOk := false;
+        doTEFExibirMensagem('Falha na transa��o TEF' + sLineBreak + e.Message);
+      end;
+    end;
 
     result := vOk;
     if vOk then

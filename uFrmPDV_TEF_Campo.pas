@@ -16,9 +16,9 @@ type
     lblTitle: TLabel;
     lblMsgRapida: TLabel;
     edResposta: TEdit;
-    cxButton1: TcxButton;
-    cxButton2: TcxButton;
-    cxButton3: TcxButton;
+    cxbtnVoltar: TcxButton;
+    cxbtnCancelar: TcxButton;
+    cxbtnConfirmar: TcxButton;
     procedure FormShow(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure edRespostaKeyPress(Sender: TObject; var Key: Char);

@@ -95,12 +95,13 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     TabOrder = 0
     OnKeyPress = edRespostaKeyPress
   end
-  object cxButton1: TcxButton
+  object cxbtnVoltar: TcxButton
     Left = 15
     Top = 94
     Width = 100
     Height = 30
     Caption = 'Voltar'
+    ModalResult = 4
     OptionsImage.Glyph.SourceDPI = 96
     OptionsImage.Glyph.SourceHeight = 20
     OptionsImage.Glyph.SourceWidth = 20
@@ -138,12 +139,13 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object cxButton2: TcxButton
+  object cxbtnCancelar: TcxButton
     Left = 131
     Top = 94
     Width = 100
     Height = 30
     Caption = 'Cancelar'
+    ModalResult = 2
     OptionsImage.Glyph.SourceDPI = 96
     OptionsImage.Glyph.SourceHeight = 20
     OptionsImage.Glyph.SourceWidth = 20
@@ -175,12 +177,13 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Font.Style = [fsBold]
     ParentFont = False
   end
-  object cxButton3: TcxButton
+  object cxbtnConfirmar: TcxButton
     Left = 245
     Top = 94
     Width = 100
     Height = 30
-    Caption = 'Cancelar'
+    Caption = 'Confirmar'
+    ModalResult = 1
     OptionsImage.Glyph.SourceDPI = 96
     OptionsImage.Glyph.SourceHeight = 20
     OptionsImage.Glyph.SourceWidth = 20
