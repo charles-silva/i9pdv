@@ -878,7 +878,7 @@ begin
               tiver POS configurado, pergunta ao operador se quer tentar a
               emiss�o manual (doPagamentoPOSManual) em vez de s� voltar pra
               tela de formas de pagamento }
-            if (goTerminal.pterm_pos) and (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
+            if (not goTerminal.pterm_pos) and (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
               'Deseja efetuar o pagamento manualmente via POS?', 'I9 PDV',
               MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = idYES) then
               doPagamentoPOSManual;
