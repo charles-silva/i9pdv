@@ -761,6 +761,7 @@ var
   vValorTotal            : Currency;
   // campos do cart�o
   loCodOperadora: Integer;
+  loFallbackPOS : Boolean;
 begin
 
   with FrmPDV do
@@ -787,6 +788,7 @@ begin
         lofp_descricao := FrmPDV_FormasPag.gofp_descricao;
 
         { Recebimento no TEF - Cart�o de Crédito e Débito }
+        loFallbackPOS := false;
         if (goTerminal.pterm_tef) and (FrmPDV_FormasPag.gofp_cartao) then
         begin
           if FrmPDV.EfetuarPagamentoTEF(loNF.NumeroFiscal.ToString, edValorForma.Value, FrmPDV_FormasPag.gofp_debito)
@@ -829,7 +831,11 @@ begin
             doNFSituacaoFechamento;
           end
           else
-            exit; { pagamento negado ou falhou -- nada a persistir, volta pra tela de formas de pagamento }
+            { TEF negado ou com qualquer problema (comunica��o, pinpad etc.) --
+              nenhum valor foi capturado, ent�o cai para a emiss�o manual via
+              POS logo abaixo, se o terminal tiver essa op��o configurada
+              (goTerminal.pterm_pos) }
+            loFallbackPOS := true;
         end;
 
         { Recebimento no TEF - Pix (QR Code) }
@@ -877,7 +883,10 @@ begin
             exit; { pagamento negado, cancelado ou falhou -- nada a persistir, volta pra tela de formas de pagamento }
         end;
 {$REGION 'Recebimento no POS - Cart�o de Cr�dito e D�bito'}
-        if (goTerminal.pterm_pos) and (FrmPDV_FormasPag.gofp_cartao) then
+        // Roda tanto para terminais sem TEF (s� POS) quanto como fallback
+        // quando o TEF falhou/foi negado (loFallbackPOS, setado acima).
+        if (goTerminal.pterm_pos) and (FrmPDV_FormasPag.gofp_cartao) and
+          ((not goTerminal.pterm_tef) or loFallbackPOS) then
         begin
           FrmPDV_POS := TFrmPDV_POS.Create(FrmPDV);
           try
