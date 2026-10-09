@@ -1,4 +1,4 @@
-unit uFrmPDV_Autorizacao;
+﻿unit uFrmPDV_Autorizacao;
 
 interface
 

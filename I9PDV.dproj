@@ -328,6 +328,10 @@
             <Form>frmOpcoesTEF</Form>
             <FormType>dfm</FormType>
         </DCCReference>
+        <DCCReference Include="uFrmMessages.pas">
+            <Form>FrmMessages</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
         <None Include="ModelSupport_WiBiPDV\default.txvpck"/>
         <None Include="ModelSupport_WiBiPDV\uFrmPDV\default.txvpck"/>
         <None Include="ModelSupport_WiBiPDV\WiBiPDV\default.txvpck"/>

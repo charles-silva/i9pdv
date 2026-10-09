@@ -3,8 +3,8 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   Top = 0
   BorderStyle = bsNone
   Caption = 'FrmPDV_TEF_Campo'
-  ClientHeight = 136
-  ClientWidth = 364
+  ClientHeight = 161
+  ClientWidth = 415
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -14,17 +14,19 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   FormStyle = fsStayOnTop
   KeyPreview = True
   Position = poScreenCenter
+  OnCloseQuery = FormCloseQuery
+  OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   OnShow = FormShow
   DesignSize = (
-    364
-    136)
+    415
+    161)
   TextHeight = 13
   object Shape1: TShape
     Left = 0
     Top = 24
-    Width = 364
-    Height = 112
+    Width = 415
+    Height = 137
     Margins.Left = 10
     Margins.Top = 0
     Margins.Right = 0
@@ -32,14 +34,12 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Align = alClient
     Brush.Style = bsClear
     Pen.Color = 11383299
-    ExplicitTop = 23
-    ExplicitWidth = 287
-    ExplicitHeight = 108
+    ExplicitTop = 32
   end
   object Shape2: TShape
     Left = 0
     Top = 0
-    Width = 364
+    Width = 415
     Height = 24
     Margins.Left = 10
     Margins.Top = 0
@@ -51,22 +51,25 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   end
   object lblTitle: TLabel
     Left = 8
-    Top = 2
-    Width = 320
+    Top = 42
+    Width = 407
     Height = 19
+    Align = alCustom
+    Alignment = taCenter
     AutoSize = False
-    Caption = 'TEF'
+    Caption = 'Entre com as informa'#231#245'es'
     Font.Charset = ANSI_CHARSET
-    Font.Color = clWhite
+    Font.Color = 5986569
     Font.Height = -19
     Font.Name = 'Lucida Console'
     Font.Style = [fsBold]
     ParentFont = False
+    Layout = tlCenter
     StyleElements = []
   end
   object lblMsgRapida: TLabel
     Left = 88
-    Top = 27
+    Top = 76
     Width = 188
     Height = 13
     Anchors = [akLeft, akBottom]
@@ -80,9 +83,24 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Visible = False
     StyleElements = []
   end
-  object edResposta: TEdit
-    Left = 16
-    Top = 57
+  object Label1: TLabel
+    Left = 8
+    Top = 3
+    Width = 320
+    Height = 19
+    AutoSize = False
+    Caption = 'Entre com as informa'#231#245'es'
+    Font.Charset = ANSI_CHARSET
+    Font.Color = clWhite
+    Font.Height = -16
+    Font.Name = 'Lucida Console'
+    Font.Style = [fsBold]
+    ParentFont = False
+    StyleElements = []
+  end
+  object edtResposta: TEdit
+    Left = 41
+    Top = 74
     Width = 329
     Height = 26
     Alignment = taCenter
@@ -93,11 +111,12 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 0
-    OnKeyPress = edRespostaKeyPress
+    OnChange = edtRespostaChange
+    OnKeyPress = edtRespostaKeyPress
   end
   object cxbtnVoltar: TcxButton
-    Left = 15
-    Top = 94
+    Left = 41
+    Top = 115
     Width = 100
     Height = 30
     Caption = 'Voltar'
@@ -140,8 +159,8 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     ParentFont = False
   end
   object cxbtnCancelar: TcxButton
-    Left = 131
-    Top = 94
+    Left = 155
+    Top = 115
     Width = 100
     Height = 30
     Caption = 'Cancelar'
@@ -178,8 +197,8 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     ParentFont = False
   end
   object cxbtnConfirmar: TcxButton
-    Left = 245
-    Top = 94
+    Left = 270
+    Top = 115
     Width = 100
     Height = 30
     Caption = 'Confirmar'

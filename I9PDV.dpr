@@ -62,7 +62,8 @@ uses
   ufracionaPedido in 'ufracionaPedido.pas' {frmFracionaPedido},
   uFrmPDV_Promocoes in 'uFrmPDV_Promocoes.pas' {FrmPDV_Promocoes},
   uFrmResumoCaixa in 'uFrmResumoCaixa.pas' {frmResumo},
-  uFrmOpcoesTEF in 'uFrmOpcoesTEF.pas' {frmOpcoesTEF};
+  uFrmOpcoesTEF in 'uFrmOpcoesTEF.pas' {frmOpcoesTEF},
+  uFrmMessages in 'uFrmMessages.pas' {FrmMessages};
 
 {$R *.res}
 
@@ -77,6 +78,7 @@ begin
   Application.CreateForm(TfrmFracionaPedido, frmFracionaPedido);
   Application.CreateForm(TfrmResumo, frmResumo);
   Application.CreateForm(TfrmOpcoesTEF, frmOpcoesTEF);
+  Application.CreateForm(TFrmMessages, FrmMessages);
   //  Application.CreateForm(Tfrmbaseexterna, frmbaseexterna);
   Application.ShowMainForm := true;
   Application.Run;

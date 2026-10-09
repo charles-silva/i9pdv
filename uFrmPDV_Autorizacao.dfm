@@ -187,6 +187,7 @@ object FrmPDV_Autorizacao: TFrmPDV_Autorizacao
     Font.Style = []
     ParentFont = False
     Layout = tlBottom
+    Visible = False
     WordWrap = True
   end
   object Label1: TLabel

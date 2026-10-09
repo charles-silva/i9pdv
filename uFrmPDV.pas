@@ -34,7 +34,8 @@ uses
   Data.Win.ADODB, Vcl.Grids, Vcl.DBGrids, Vcl.Menus, cxButtons, dxDateRanges,
   dxScrollbarAnnotations, dxSkinDarkroom, dxSkinDarkSide,
   dxSkinDevExpressDarkStyle, cxGeometry, dxFramedControl, dxPanel,
-  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF_QRCode, uFrmPDV_TEF_Campo, ACBrTEFAPICliSiTef,
+  Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF_QRCode, uFrmPDV_TEF_Campo,
+  ACBrTEFAPICliSiTef,
   ACBrTEFComum;
 
 type
@@ -3941,13 +3942,13 @@ end;
 // trabalho), igual ao demo oficial do ACBr.
 procedure TFrmPDV.doTEFExibirMensagem(const AMsg: String);
 begin
-  FMensagemTEF := AMsg;
-  AtualizarContadorTEF;
-
-  if TimerTEFContador.Enabled then
-    doTEFAtualizarAviso(FMensagemTEF, FContadorSegundosTEF)
-  else
-    doTEFAtualizarAviso(FMensagemTEF, 0);
+  // FMensagemTEF := AMsg;
+  // AtualizarContadorTEF;
+  //
+  // if TimerTEFContador.Enabled then
+  // doTEFAtualizarAviso(FMensagemTEF, FContadorSegundosTEF)
+  // else
+  doTEFAtualizarAviso(FMensagemTEF, 0);
 end;
 
 procedure TFrmPDV.TimerTEFContadorTimer(Sender: TObject);
@@ -3957,7 +3958,7 @@ begin
 end;
 
 procedure TFrmPDV.ACBrTEFAPI1QuandoExibirMensagem(const Mensagem: string; Terminal: TACBrTEFAPITela;
-MilissegundosExibicao: Integer);
+  MilissegundosExibicao: Integer);
 begin
   if (Mensagem = '') then
     exit;
@@ -3992,15 +3993,13 @@ end;
 // (sem thread de trabalho), igual ao demo oficial do ACBr -- por isso os
 // par�metros var (Resposta, Cancelado) s�o atribu�dos diretamente.
 procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarCampo(DefinicaoCampo: TACBrTEFAPIDefinicaoCampo; var Resposta: string;
-var Validado, Cancelado: Boolean);
+  var Validado, Cancelado: Boolean);
+var
+  MR       : TModalResult;
+  FormCampo: TFrmPDV_TEF_Campo;
 begin
   Validado := false;
 
-  // Quando o TEF pede "Forne�a o c�digo do supervisor", reaproveita a tela de
-  // login/autoriza��o j� usada em cancelamento de venda/sangria/abertura de
-  // caixa etc (TFrmPDV_Autorizacao) em vez do teclado gen�rico
-  // (TFrmPDV_TEF_Campo): o operador informa matr�cula+senha, e a matr�cula
-  // validada (edUsuario.Text) � devolvida ao TEF como resposta do campo.
   if SameText(Trim(DefinicaoCampo.TituloPergunta), 'Forne�a o c�digo do supervisor') or
     SameText(Trim(DefinicaoCampo.TituloPergunta), 'Forneca o codigo do supervisor') then
   begin
@@ -4018,22 +4017,54 @@ begin
     exit;
   end;
 
-  // FormCampo := TFrmPDV_TEF_Campo.Create(self);
-  // try
-  //   FormCampo.Titulo              := DefinicaoCampo.TituloPergunta;
-  //   FormCampo.TamanhoMinimo       := DefinicaoCampo.TamanhoMinimo;
-  //   FormCampo.TamanhoMaximo       := DefinicaoCampo.TamanhoMaximo;
-  //   FormCampo.Ocultar             := DefinicaoCampo.OcultarDadosDigitados;
-  //   FormCampo.TipoDeEntrada       := DefinicaoCampo.TipoDeEntrada;
-  //   FormCampo.Resposta            := DefinicaoCampo.ValorInicial;
-  //   FormCampo.cxbtnVoltar.Visible := (ACBrTEFAPI1.TEF is TACBrTEFAPIClassCliSiTef);
-  //
-  //   Cancelado := (FormCampo.ShowModal <> mrOK);
-  //   if not Cancelado then
-  //     Resposta := FormCampo.Resposta;
-  // finally
-  //   FormCampo.Free;
-  // end;
+  FormCampo := TFrmPDV_TEF_Campo.Create(self);
+  try
+    FormCampo.Titulo              := DefinicaoCampo.TituloPergunta;
+    FormCampo.TamanhoMinimo       := DefinicaoCampo.TamanhoMinimo;
+    FormCampo.TamanhoMaximo       := DefinicaoCampo.TamanhoMaximo;
+    FormCampo.Ocultar             := DefinicaoCampo.OcultarDadosDigitados;
+    FormCampo.Resposta            := DefinicaoCampo.ValorInicial;
+    FormCampo.cxbtnVoltar.Visible := (ACBrTEFAPI1.TEF is TACBrTEFAPIClassCliSiTef);
+
+    if (POS('R$', DefinicaoCampo.MascaraDeCaptura) > 0) or (POS('@.@@@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) or
+      (POS('@@@@@@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) then
+      FormCampo.TipoCampo := tcoCurrency
+    else
+    begin
+      case DefinicaoCampo.TipoDeEntrada of
+        tedApenasLeitura:
+          FormCampo.edtResposta.ReadOnly := true;
+        tedNumerico:
+          if (POS('@,@@', DefinicaoCampo.MascaraDeCaptura) > 0) then
+            FormCampo.TipoCampo := tcoDecimal
+          else
+            FormCampo.TipoCampo := tcoNumeric;
+        tedAlfabetico:
+          FormCampo.TipoCampo := tcoAlfa;
+        tedAlfaNum:
+          FormCampo.TipoCampo := tcoAlfaNum;
+      else
+        FormCampo.TipoCampo := tcoString;
+      end;
+    end;
+
+    MR := FormCampo.ShowModal;
+
+    Cancelado := (MR = mrCancel);
+    Validado  := false;
+    // Não fizemos as validações de "DefinicaoCampo.ValidacaoDado", vamos deixar o ACBrTEFAPI validar
+
+    if (MR = mrOK) then
+      Resposta := FormCampo.Resposta
+    else if (MR = mrRetry) then // Botão Voltar
+      Resposta := ':-2'
+    else if (MR = mrCancel) then // Botão Cancelar
+      Resposta := ':-1';
+  finally
+    FormCampo.Free;
+    // // end;
+  end;
+
 end;
 
 // EfetuarPagamento/EfetuarAdministrativa chamam isso direto na main thread
@@ -4042,7 +4073,7 @@ end;
 // indefinido para deixar o TEF perguntar � vista/parcelado/etc), n�o s�
 // nos casos raros de antes.
 procedure TFrmPDV.ACBrTEFAPI1QuandoPerguntarMenu(const Titulo: string; Opcoes: TStringList;
-var ItemSelecionado: Integer);
+  var ItemSelecionado: Integer);
 var
   MR         : TModalResult;
   FormMenuTEF: TFrmPDV_TEF_Operacoes;
@@ -4220,8 +4251,8 @@ end;
 // enquanto espera, mantendo a tela respondendo e o ESC do operador
 // funcionando, igual ao demo oficial do ACBr.
 function TFrmPDV.EfetuarPagamentoTEFComum(const ANumeroFiscal: String; AValor: Currency;
-AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
-AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
+  AModalidade: TACBrTEFModalidadePagamento; ACartoesAceitos: TACBrTEFTiposCartao;
+  AFinanciamento: TACBrTEFModalidadeFinanciamento; AParcelas: Byte): Boolean;
 var
   vOk: Boolean;
 begin
@@ -4324,7 +4355,7 @@ end;
 // contrapartida fiscal. Chamada s�ncrona na main thread, sem tela pr�pria,
 // mesmo padr�o usado pelo demo oficial do ACBr em btCancelarUltimaClick.
 function TFrmPDV.EstornarTransacaoTEF(const ANSU, ACodigoAutorizacao, ARede, AFinalizacao: String; ADataHora: TDateTime;
-AValor: Double): Boolean;
+  AValor: Double): Boolean;
 begin
   result := false;
   doTEFExibirMensagem('Estornando transa��o TEF (venda n�o finalizada)...');
@@ -4419,7 +4450,7 @@ begin
     goTerminal.pterm_sat_assinatura,                                    //
     goTerminal.pterm_numero,                                            //
     0,                                                                  // 0-taProducao;1-taHomologacao
-  cSwHCNPJ,                                                             //
+    cSwHCNPJ,                                                           //
     FrmPDV_DModule.cdsEmpresa.FieldByName('em_cnpj').AsString,          //
     FrmPDV_DModule.cdsEmpresa.FieldByName('em_ie').AsString,            //
     FrmPDV_DModule.cdsEmpresa.FieldByName('em_inscmunicipal').AsString, //
@@ -4465,8 +4496,8 @@ begin
         loSATSendPayCFe := FrmPDV_SAT.doSendPayCFe(fdPagamentosAll.FieldByName('pnf_numero_fiscal').AsInteger,
           goTerminal.pterm_pos_chave_validador, //
           fdPagamentosAll.FieldByName('pnfp_chave_requisicao').AsString,
-        // goTerminal.pterm_pos_chave_requisicao, // );
-        fdPagamentosAll.FieldByName('pnfp_merchant_id').AsString,    //
+          // goTerminal.pterm_pos_chave_requisicao, // );
+          fdPagamentosAll.FieldByName('pnfp_merchant_id').AsString,  //
           fdPagamentosAll.FieldByName('pnfp_serial_pos').AsString,   //
           FrmPDV_DModule.cdsEmpresa.FieldByName('em_cnpj').AsString, //
           fdPagamentosAll.FieldByName('pnfp_pos_valor').AsCurrency,  //
@@ -4494,7 +4525,7 @@ begin
               fdPagamentosAll.FieldByName('pnfp_pos_codigo_aut').AsString, //
               fdPagamentosAll.FieldByName('pnfp_pos_tipo').AsString,       //
               fdPagamentosAll.FieldByName('pnfp_pos_inst_financeira').AsString,
-            //
+              //
               '',                                                        //
               fdPagamentosAll.FieldByName('pnf_numero_fiscal').AsString, //
               fdPagamentosAll.FieldByName('pnfp_pos_id_fila').AsInteger);
