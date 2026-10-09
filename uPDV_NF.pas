@@ -831,11 +831,17 @@ begin
             doNFSituacaoFechamento;
           end
           else
+          begin
             { TEF negado ou com qualquer problema (comunica��o, pinpad etc.) --
-              nenhum valor foi capturado, ent�o cai para a emiss�o manual via
-              POS logo abaixo, se o terminal tiver essa op��o configurada
-              (goTerminal.pterm_pos) }
-            loFallbackPOS := true;
+              nenhum valor foi capturado. Se o terminal tiver POS configurado,
+              pergunta ao operador se quer tentar a emiss�o manual (bloco logo
+              abaixo) em vez de cair automaticamente }
+            loFallbackPOS := false;
+            if goTerminal.pterm_pos then
+              loFallbackPOS := (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
+                'Deseja efetuar o pagamento manualmente via POS?', 'I9 PDV',
+                MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = idYES);
+          end;
         end;
 
         { Recebimento no TEF - Pix (QR Code) }
