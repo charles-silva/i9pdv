@@ -761,6 +761,50 @@ var
   vValorTotal            : Currency;
   // campos do cart�o
   loCodOperadora: Integer;
+
+  // Emiss�o manual via POS (wizard pedindo adquirente/autoriza��o/parcelas
+  // digitadas pelo operador), usada tanto quando o terminal n�o tem TEF
+  // quanto como fallback quando o TEF falha. Procedure aninhada (n�o um
+  // m�todo separado) para reaproveitar lofp_codigo/lofp_descricao -- a forma
+  // de pagamento j� escolhida pelo operador em FrmPDV_FormasPag -- e as
+  // demais vari�veis locais de doConfirmaPagamento sem precisar passar tudo
+  // por par�metro.
+  procedure doPagamentoPOSManual;
+  begin
+    with FrmPDV do
+    begin
+      FrmPDV_POS := TFrmPDV_POS.Create(FrmPDV);
+      try
+        FrmPDV_POS.ShowModal;
+        if (not FrmPDV_POS.gWizardFinished) then
+          exit;
+        loadq_id            := FrmPDV_POS.goadq_id;
+        lopos_id            := FrmPDV_POS.gopos_id;
+        loCodOperadora      := FrmPDV_POS.goop_codigo;
+        cxTabSheet2.Enabled := false;
+
+        // pos manaul novo menu wizard
+        loNSU_SITEF    := 'I9MOBILE';
+        loNSU_HOSTTEF  := FrmPDV_POS.goAutorizacao;
+        loParcelas     := FrmPDV_POS.goParcela.ToString;
+        loNSU_BANDEIRA := FrmPDV_POS.goOp_descricao;
+
+        loPnfp_id := doAdicFormaNF(lofp_codigo, loCodOperadora, loWiBiRespostaValidador, loPOSManual, loadq_id,
+          lopos_id, loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
+        if loPnfp_id = 0 then
+          exit;
+        doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
+
+        if not doNFFechamento then
+          exit;
+        doNFSituacaoFechamento;
+      finally
+        FrmPDV_POS.Destroy;
+        cxTabSheet2.Enabled := true;
+      end;
+    end;
+  end;
+
 begin
 
   with FrmPDV do
@@ -829,7 +873,18 @@ begin
             doNFSituacaoFechamento;
           end
           else
-            exit; { pagamento negado ou falhou -- nada a persistir, volta pra tela de formas de pagamento }
+          begin
+            { pagamento negado ou falhou -- nada foi capturado. Se o terminal
+              tiver POS configurado, pergunta ao operador se quer tentar a
+              emiss�o manual (doPagamentoPOSManual) em vez de s� voltar pra
+              tela de formas de pagamento }
+            if (goTerminal.pterm_pos) and (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
+              'Deseja efetuar o pagamento manualmente via POS?', 'I9 PDV',
+              MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = idYES) then
+              doPagamentoPOSManual;
+            exit; { nada mais a fazer aqui -- doPagamentoPOSManual j� cuidou de persistir/fechar a nota, ou o
+              operador optou/precisou voltar pra tela de formas de pagamento }
+          end;
         end;
 
         { Recebimento no TEF - Pix (QR Code) }
@@ -878,38 +933,7 @@ begin
         end;
 {$REGION 'Recebimento no POS - Cart�o de Cr�dito e D�bito'}
         if (goTerminal.pterm_pos) and (FrmPDV_FormasPag.gofp_cartao) then
-        begin
-          FrmPDV_POS := TFrmPDV_POS.Create(FrmPDV);
-          try
-            FrmPDV_POS.ShowModal;
-            if (not FrmPDV_POS.gWizardFinished) then
-              exit;
-            loadq_id            := FrmPDV_POS.goadq_id;
-            lopos_id            := FrmPDV_POS.gopos_id;
-            loCodOperadora      := FrmPDV_POS.goop_codigo;
-            cxTabSheet2.Enabled := false;
-
-            // pos manaul novo menu wizard
-            loNSU_SITEF    := 'I9MOBILE';
-            loNSU_HOSTTEF  := FrmPDV_POS.goAutorizacao;
-            loParcelas     := FrmPDV_POS.goParcela.ToString;
-            loNSU_BANDEIRA := FrmPDV_POS.goOp_descricao;
-
-            loPnfp_id := doAdicFormaNF(lofp_codigo, loCodOperadora, loWiBiRespostaValidador, loPOSManual, loadq_id,
-              lopos_id, loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
-            if loPnfp_id = 0 then
-              exit;
-            doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
-
-            if not doNFFechamento then
-              exit;
-            doNFSituacaoFechamento;
-
-          finally
-            FrmPDV_POS.Destroy;
-            cxTabSheet2.Enabled := true;
-          end;
-        end;
+          doPagamentoPOSManual;
 {$ENDREGION}
         if not (FrmPDV_FormasPag.gofp_cartao or (goTerminal.pterm_tef and FrmPDV_FormasPag.gofp_pix)) then
         begin
