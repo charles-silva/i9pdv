@@ -11,6 +11,7 @@ object FrmMessages: TFrmMessages
   Font.Height = -12
   Font.Name = 'Segoe UI'
   Font.Style = []
+  Position = poScreenCenter
   OnKeyDown = FormKeyDown
   DesignSize = (
     470
@@ -93,5 +94,10 @@ object FrmMessages: TFrmMessages
     ParentFont = False
     Layout = tlCenter
     StyleElements = []
+  end
+  object TimerEspera: TTimer
+    Enabled = False
+    Left = 424
+    Top = 8
   end
 end

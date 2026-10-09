@@ -624,7 +624,8 @@ uses uFrmPDV_DModule, uFrmPDV_Autorizacao, uGlobalLibPDV, uFrmPDV_Bloqueio,
   uFrmOperacao_Sangria, uFrmPDV_IdentificaCliente,
   uFrmPDV_ImportaPreVenda, uFrmPDV_SAT, uPDV_Print,
   uPDV_SetValores, uPDV_NF, uimpDados, uvendas, ufracionaPedido,
-  uFrmPDV_Login_DefineSenha, ACBrDeviceSerial, uFrmPDV_Promocoes, uFrmResumoCaixa, uFrmBaseExterna, System.TypInfo;
+  uFrmPDV_Login_DefineSenha, ACBrDeviceSerial, uFrmPDV_Promocoes, uFrmResumoCaixa, uFrmBaseExterna, System.TypInfo,
+  uFrmMessages;
 
 { M�todos do formul�rio }
 
@@ -3942,13 +3943,13 @@ end;
 // trabalho), igual ao demo oficial do ACBr.
 procedure TFrmPDV.doTEFExibirMensagem(const AMsg: String);
 begin
-  // FMensagemTEF := AMsg;
-  // AtualizarContadorTEF;
-  //
-  // if TimerTEFContador.Enabled then
-  // doTEFAtualizarAviso(FMensagemTEF, FContadorSegundosTEF)
-  // else
-  doTEFAtualizarAviso(FMensagemTEF, 0);
+  FMensagemTEF := AMsg;
+  AtualizarContadorTEF;
+
+  if TimerTEFContador.Enabled then
+    doTEFAtualizarAviso(FMensagemTEF, FContadorSegundosTEF)
+  else
+    doTEFAtualizarAviso(FMensagemTEF, 0);
 end;
 
 procedure TFrmPDV.TimerTEFContadorTimer(Sender: TObject);
@@ -3957,13 +3958,25 @@ begin
   doTEFExibirMensagem(FMensagemTEF);
 end;
 
+// Mesma estrutura do demo oficial do ACBr (TFormPrincipal.
+// ACBrTEFAPI1QuandoExibirMensagem): Mensagem = '' s� limpa o aviso;
+// MilissegundosExibicao >= 0 pede uma tela modal (bloqueia at� o operador
+// confirmar ou o tempo esgotar) -- usamos o form FrmMessages para isso, em
+// vez do lblTEFAviso; caso contr�rio (< 0) � s� um aviso de status, que
+// continua indo para lblTEFAviso via doTEFExibirMensagem.
 procedure TFrmPDV.ACBrTEFAPI1QuandoExibirMensagem(const Mensagem: string; Terminal: TACBrTEFAPITela;
   MilissegundosExibicao: Integer);
 begin
   if (Mensagem = '') then
-    exit;
-
-  doTEFExibirMensagem(Mensagem);
+    doTEFExibirMensagem('')
+  else if (MilissegundosExibicao >= 0) then
+  begin
+    FrmMessages.lblStatus.Caption := Mensagem;
+    FrmMessages.TempoEspera       := MilissegundosExibicao;
+    FrmMessages.ShowModal;
+  end
+  else
+    doTEFExibirMensagem(Mensagem);
 end;
 
 procedure TFrmPDV.ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF: TACBrTEFResp);

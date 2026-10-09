@@ -3,7 +3,7 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   Top = 0
   BorderStyle = bsNone
   Caption = 'FrmPDV_TEF_Campo'
-  ClientHeight = 161
+  ClientHeight = 199
   ClientWidth = 415
   Color = clWhite
   Font.Charset = DEFAULT_CHARSET
@@ -20,13 +20,13 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   OnShow = FormShow
   DesignSize = (
     415
-    161)
+    199)
   TextHeight = 13
   object Shape1: TShape
     Left = 0
     Top = 24
     Width = 415
-    Height = 137
+    Height = 175
     Margins.Left = 10
     Margins.Top = 0
     Margins.Right = 0
@@ -34,7 +34,8 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Align = alClient
     Brush.Style = bsClear
     Pen.Color = 11383299
-    ExplicitTop = 32
+    ExplicitLeft = 208
+    ExplicitTop = 88
   end
   object Shape2: TShape
     Left = 0
@@ -51,10 +52,9 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   end
   object lblTitle: TLabel
     Left = 8
-    Top = 42
+    Top = 34
     Width = 407
-    Height = 19
-    Align = alCustom
+    Height = 55
     Alignment = taCenter
     AutoSize = False
     Caption = 'Entre com as informa'#231#245'es'
@@ -65,11 +65,12 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     Font.Style = [fsBold]
     ParentFont = False
     Layout = tlCenter
+    WordWrap = True
     StyleElements = []
   end
   object lblMsgRapida: TLabel
     Left = 88
-    Top = 76
+    Top = 114
     Width = 188
     Height = 13
     Anchors = [akLeft, akBottom]
@@ -82,6 +83,7 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
     ParentFont = False
     Visible = False
     StyleElements = []
+    ExplicitTop = 76
   end
   object Label1: TLabel
     Left = 8
@@ -100,7 +102,7 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   end
   object edtResposta: TEdit
     Left = 41
-    Top = 74
+    Top = 98
     Width = 329
     Height = 26
     Alignment = taCenter
@@ -116,7 +118,7 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   end
   object cxbtnVoltar: TcxButton
     Left = 41
-    Top = 115
+    Top = 139
     Width = 100
     Height = 30
     Caption = 'Voltar'
@@ -160,7 +162,7 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   end
   object cxbtnCancelar: TcxButton
     Left = 155
-    Top = 115
+    Top = 139
     Width = 100
     Height = 30
     Caption = 'Cancelar'
@@ -198,7 +200,7 @@ object FrmPDV_TEF_Campo: TFrmPDV_TEF_Campo
   end
   object cxbtnConfirmar: TcxButton
     Left = 270
-    Top = 115
+    Top = 139
     Width = 100
     Height = 30
     Caption = 'Confirmar'
