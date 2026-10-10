@@ -805,6 +805,30 @@ var
     end;
   end;
 
+  // Pagamento gen�rico (dinheiro, cheque etc., ou Pix sem TEF): n�o precisa de
+  // wizard algum, s� grava o que j� estiver em loNSU_*/loComprovante* (em
+  // geral vazios) com a forma de pagamento escolhida em FrmPDV_FormasPag.
+  // Procedure aninhada pelo mesmo motivo de doPagamentoPOSManual -- reaproveita
+  // lofp_codigo/lofp_descricao e as demais vari�veis locais sem par�metro.
+  procedure doPagamentoGenerico;
+  begin
+    with FrmPDV do
+    begin
+      if loWiBiRespostaValidador = nil then
+        loWiBiRespostaValidador := TWiBiRespostaValidador.Create;
+
+      loPnfp_id := doAdicFormaNF(lofp_codigo, loCodOperadora, loWiBiRespostaValidador, loPOSManual, loadq_id,
+        lopos_id, loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
+      if loPnfp_id = 0 then
+        exit;
+      doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
+
+      if not doNFFechamento then
+        exit;
+      doNFSituacaoFechamento;
+    end;
+  end;
+
 begin
 
   with FrmPDV do
@@ -878,7 +902,7 @@ begin
               tiver POS configurado, pergunta ao operador se quer tentar a
               emiss�o manual (doPagamentoPOSManual) em vez de s� voltar pra
               tela de formas de pagamento }
-            if (not goTerminal.pterm_pos) and (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
+            if (goTerminal.pterm_pos) and (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
               'Deseja efetuar o pagamento manualmente via POS?', 'I9 PDV',
               MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = idYES) then
               doPagamentoPOSManual;
@@ -929,27 +953,27 @@ begin
             doNFSituacaoFechamento;
           end
           else
-            exit; { pagamento negado, cancelado ou falhou -- nada a persistir, volta pra tela de formas de pagamento }
+          begin
+            { pagamento negado, cancelado ou falhou -- nada foi capturado via
+              TEF. Pix n�o tem equipamento manual (POS) para cair como
+              alternativa -- pergunta ao operador se o pagamento foi recebido
+              por outro meio (ex.: confirmado no aplicativo do banco) para
+              registrar manualmente (doPagamentoGenerico), em vez de s� voltar
+              pra tela de formas de pagamento }
+            if (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF (Pix).' + sLineBreak +
+              'O pagamento foi recebido por outro meio? Deseja registrar manualmente?', 'I9 PDV',
+              MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = idYES) then
+              doPagamentoGenerico;
+            exit; { nada mais a fazer aqui -- doPagamentoGenerico j� cuidou de persistir/fechar a nota, ou o
+              operador optou/precisou voltar pra tela de formas de pagamento }
+          end;
         end;
 {$REGION 'Recebimento no POS - Cart�o de Cr�dito e D�bito'}
         if (goTerminal.pterm_pos) and (FrmPDV_FormasPag.gofp_cartao) then
           doPagamentoPOSManual;
 {$ENDREGION}
         if not (FrmPDV_FormasPag.gofp_cartao or (goTerminal.pterm_tef and FrmPDV_FormasPag.gofp_pix)) then
-        begin
-          if loWiBiRespostaValidador = nil then
-            loWiBiRespostaValidador := TWiBiRespostaValidador.Create;
-
-          loPnfp_id := doAdicFormaNF(lofp_codigo, loCodOperadora, loWiBiRespostaValidador, loPOSManual, loadq_id,
-            lopos_id, loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
-          if loPnfp_id = 0 then
-            exit;
-          doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
-
-          if not doNFFechamento then
-            exit;
-          doNFSituacaoFechamento;
-        end;
+          doPagamentoGenerico;
 
       end;
     finally
