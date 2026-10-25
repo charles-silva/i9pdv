@@ -77,12 +77,12 @@ type
     procedure updateEstoqueFicalContigencia(Pedido: Integer);
     procedure doLogFile(ALog: string);
   public
-    goPnf_id               : Integer;
-    goTerminal             : String;
-    goXMLToCancel          : String;
-    goPathNFe, goImpressora: String;
-    goContigencia          : Boolean;
-    goOffLine, goCancelMode: Boolean;
+    goPnf_id                        : Integer;
+    goTerminal                      : String;
+    goXMLToCancel                   : String;
+    goPathNFe, goImpressora         : String;
+    goContigencia                   : Boolean;
+    goOffLine, goCancelMode, goIsTEF: Boolean;
     procedure doSetConfigNFCe;
   end;
 
@@ -589,7 +589,11 @@ begin
           xPag := dsNFCePags.FieldByName('fp_descricao').AsString;
         if tPag in [fpCartaoCredito, fpCartaoDebito, fpPagamentoInstantaneo] then
         begin
-          tpIntegra    := tiPagNaoIntegrado;
+          // if (not goIsTEF) then
+          // tpIntegra := tiPagNaoIntegrado
+          // else
+          tpIntegra    := tiPagIntegrado;
+          idtermPag    := goTerminal;
           vIndBandeira := ACBRUtil.PadLeft(dsNFCePags.FieldByName('op_codigo').AsString, 2, Char('0'));
           CNPJ         := dsNFCePags.FieldByName('adq_cnpj').AsString;
           tBand        := StrToBandeiraCartao(ok, vIndBandeira);

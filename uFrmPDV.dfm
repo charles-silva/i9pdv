@@ -85968,6 +85968,10 @@ object FrmPDV: TFrmPDV
     object cxtabPrincipal: TcxTabSheet
       Caption = '``'
       ImageIndex = 0
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         1105
         565)
@@ -87775,6 +87779,10 @@ object FrmPDV: TFrmPDV
       Caption = 'cxTabSheet2'
       ImageIndex = 1
       OnShow = cxTabSheet2Show
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         1105
         565)
@@ -88219,6 +88227,10 @@ object FrmPDV: TFrmPDV
     object cxTabSheet3: TcxTabSheet
       Caption = 'cxTabSheet3'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         1105
         565)
@@ -88910,6 +88922,10 @@ object FrmPDV: TFrmPDV
     object cxTabSheet4: TcxTabSheet
       Caption = 'cxTabSheet4'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Shape11: TShape
         Tag = 98
         Left = 5
@@ -89096,6 +89112,10 @@ object FrmPDV: TFrmPDV
     object cxTabSheet5: TcxTabSheet
       Caption = 'Impress'#245'es'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         1105
         565)
@@ -89380,6 +89400,10 @@ object FrmPDV: TFrmPDV
     object cxTabSheet6: TcxTabSheet
       Caption = 'cxTabSheet6'
       ImageIndex = 5
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       DesignSize = (
         1105
         565)
@@ -90877,5 +90901,12 @@ object FrmPDV: TFrmPDV
     LinhasEntreCupons = 0
     Left = 61
     Top = 416
+  end
+  object ACBrSmartTEF1: TACBrSmartTEF
+    ProxyPort = '8080'
+    ContentsEncodingCompress = []
+    NivelLog = 0
+    Left = 256
+    Top = 248
   end
 end

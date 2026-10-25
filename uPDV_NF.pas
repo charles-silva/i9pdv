@@ -443,6 +443,7 @@ begin
             if Assigned(FrmPDV_NFCe) then
               FrmPDV_NFCe.Free;
             FrmPDV_NFCe              := TFrmPDV_NFCe.Create(FrmPDV);
+            FrmPDV_NFCe.goIsTEF      := goTerminal.pterm_tef;
             FrmPDV_NFCe.goOffline    := goTerminal.pterm_nfce_offline;
             FrmPDV_NFCe.goPnf_id     := FrmPDV.goPnf_id;
             FrmPDV_NFCe.goPathNFe    := ExtractFilePath(Application.ExeName);
@@ -805,11 +806,11 @@ var
     end;
   end;
 
-  // Pagamento gen�rico (dinheiro, cheque etc., ou Pix sem TEF): n�o precisa de
-  // wizard algum, s� grava o que j� estiver em loNSU_*/loComprovante* (em
-  // geral vazios) com a forma de pagamento escolhida em FrmPDV_FormasPag.
-  // Procedure aninhada pelo mesmo motivo de doPagamentoPOSManual -- reaproveita
-  // lofp_codigo/lofp_descricao e as demais vari�veis locais sem par�metro.
+// Pagamento gen�rico (dinheiro, cheque etc., ou Pix sem TEF): n�o precisa de
+// wizard algum, s� grava o que j� estiver em loNSU_*/loComprovante* (em
+// geral vazios) com a forma de pagamento escolhida em FrmPDV_FormasPag.
+// Procedure aninhada pelo mesmo motivo de doPagamentoPOSManual -- reaproveita
+// lofp_codigo/lofp_descricao e as demais vari�veis locais sem par�metro.
   procedure doPagamentoGenerico;
   begin
     with FrmPDV do
@@ -817,8 +818,8 @@ var
       if loWiBiRespostaValidador = nil then
         loWiBiRespostaValidador := TWiBiRespostaValidador.Create;
 
-      loPnfp_id := doAdicFormaNF(lofp_codigo, loCodOperadora, loWiBiRespostaValidador, loPOSManual, loadq_id,
-        lopos_id, loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
+      loPnfp_id := doAdicFormaNF(lofp_codigo, loCodOperadora, loWiBiRespostaValidador, loPOSManual, loadq_id, lopos_id,
+        loNSU_SITEF, loNSU_HOSTTEF, loNSU_BANDEIRA, loParcelas, loComprovante1aVia, loComprovante2aVia);
       if loPnfp_id = 0 then
         exit;
       doAddFormaList(lofp_codigo, loPnfp_id, lofp_descricao);
@@ -862,12 +863,12 @@ begin
           begin
             with FrmPDV.ACBrTEFAPI1.UltimaRespostaTEF do
             begin
-              loNSU_SITEF                := NSU_TEF;
-              loNSU_HOSTTEF              := NSU;
-              loNSU_BANDEIRA             := Rede;
-              loParcelas                 := QtdParcelas.ToString;
-              loComprovante1aVia         := ImagemComprovante1aVia.Text;
-              loComprovante2aVia         := ImagemComprovante2aVia.Text;
+              loNSU_SITEF        := NSU_TEF;
+              loNSU_HOSTTEF      := NSU;
+              loNSU_BANDEIRA     := Rede;
+              loParcelas         := QtdParcelas.ToString;
+              loComprovante1aVia := ImagemComprovante1aVia.Text;
+              loComprovante2aVia := ImagemComprovante2aVia.Text;
             end;
 
             loPnfp_id := doAdicFormaNF(lofp_codigo, 0, loWiBiRespostaValidador, loPOSManual, loadq_id, lopos_id,
@@ -902,9 +903,10 @@ begin
               tiver POS configurado, pergunta ao operador se quer tentar a
               emiss�o manual (doPagamentoPOSManual) em vez de s� voltar pra
               tela de formas de pagamento }
-            if (goTerminal.pterm_pos) and (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
-              'Deseja efetuar o pagamento manualmente via POS?', 'I9 PDV',
-              MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1) = idYES) then
+            if (goTerminal.pterm_pos) and
+              (MessageBox(handle, 'Falha ao efetuar o pagamento via TEF.' + sLineBreak +
+              'Deseja efetuar o pagamento manualmente via POS?', 'I9 PDV', MB_ICONQUESTION + MB_YESNO + MB_DEFBUTTON1)
+              = idYES) then
               doPagamentoPOSManual;
             exit; { nada mais a fazer aqui -- doPagamentoPOSManual j� cuidou de persistir/fechar a nota, ou o
               operador optou/precisou voltar pra tela de formas de pagamento }
@@ -918,12 +920,12 @@ begin
           begin
             with FrmPDV.ACBrTEFAPI1.UltimaRespostaTEF do
             begin
-              loNSU_SITEF                := NSU_TEF;
-              loNSU_HOSTTEF              := NSU;
-              loNSU_BANDEIRA             := Rede;
-              loParcelas                 := QtdParcelas.ToString;
-              loComprovante1aVia         := ImagemComprovante1aVia.Text;
-              loComprovante2aVia         := ImagemComprovante2aVia.Text;
+              loNSU_SITEF        := NSU_TEF;
+              loNSU_HOSTTEF      := NSU;
+              loNSU_BANDEIRA     := Rede;
+              loParcelas         := QtdParcelas.ToString;
+              loComprovante1aVia := ImagemComprovante1aVia.Text;
+              loComprovante2aVia := ImagemComprovante2aVia.Text;
             end;
 
             loPnfp_id := doAdicFormaNF(lofp_codigo, 0, loWiBiRespostaValidador, loPOSManual, loadq_id, lopos_id,
@@ -972,7 +974,7 @@ begin
         if (goTerminal.pterm_pos) and (FrmPDV_FormasPag.gofp_cartao) then
           doPagamentoPOSManual;
 {$ENDREGION}
-        if not (FrmPDV_FormasPag.gofp_cartao or (goTerminal.pterm_tef and FrmPDV_FormasPag.gofp_pix)) then
+        if not(FrmPDV_FormasPag.gofp_cartao or (goTerminal.pterm_tef and FrmPDV_FormasPag.gofp_pix)) then
           doPagamentoGenerico;
 
       end;

@@ -341,7 +341,7 @@ begin
   with FrmPDV do
   begin
     // lblTerminal.Caption := goTerminal.pterm_id;
-    lblLastSync.Caption := goTerminal.pterm_last_sync_str;
+    // lblLastSync.Caption := goTerminal.pterm_last_sync_str;
     // lblServidor.Caption := GetFieldInString(FrmPDV_DModule.ADConnection1.Params.Values['Server'] + ',', 1, ',') + ' (' +
     // FrmPDV_DModule.ADConnection1.Params.Values['Database'] + ')';
     // lblServidorCaption.left := lblServidor.left - (lblServidorCaption.width + 5);

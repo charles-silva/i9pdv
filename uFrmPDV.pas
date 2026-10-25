@@ -36,7 +36,7 @@ uses
   dxSkinDevExpressDarkStyle, cxGeometry, dxFramedControl, dxPanel,
   Vcl.Imaging.pngimage, ACBrTEFAPIComum, ACBrTEFAPI, uFrmPDV_TEF_Operacoes, uFrmPDV_TEF_QRCode, uFrmPDV_TEF_Campo,
   ACBrTEFAPICliSiTef,
-  ACBrTEFComum;
+  ACBrTEFComum, ACBrSocket, ACBrTEFSmartTEFAPI;
 
 type
   TListItemPag = record
@@ -468,6 +468,7 @@ type
     fdqryImpressora: TFDQuery;
     ACBrPosPrinter1: TACBrPosPrinter;
     lblTEFAviso: TLabel;
+    ACBrSmartTEF1: TACBrSmartTEF;
     procedure ACBrTEFAPI1QuandoExibirMensagem(const Mensagem: string; Terminal: TACBrTEFAPITela;
       MilissegundosExibicao: Integer);
     procedure ACBrTEFAPI1QuandoFinalizarOperacao(RespostaTEF: TACBrTEFResp);
@@ -563,6 +564,7 @@ type
     goPcxo_id_temp         : Integer;
     goTerminal             : TTerminal;
     function DesCriptografar(V_Valor: String; V_Retorna: Word): String;
+    function Criptografar(V_Valor: String; V_Retorna: Word): String;
     procedure doGetTotaisEncerra;
     function doExecFunction(Acode: String): Boolean;
     procedure doAddItensList(AItens: TObjectList<TNFItem>);
@@ -1079,7 +1081,10 @@ begin
       VK_F3:
         doExecFunction('210');
       VK_F4:
-        doExecFunction('205');
+        begin
+          if not(ssAlt in Shift) then
+            doExecFunction('205');
+        end;
       VK_F5:
         doExecFunction('202');
       VK_F6:
@@ -1090,13 +1095,13 @@ end;
 
 function TFrmPDV.DesCriptografar(V_Valor: String; V_Retorna: Word): String;
 const
-  Criptografado1 = '�������������z������/����x�Zf`rec^bnhg#|�����~����w\vdsqpomlk���������y{]_tauij����[}��������';
-  Criptografado2 = '�������������y������.����w�Ye_qdb]amgf"{����}����v[ucrponlkj���������xz\^s`thi����Z|~��������';
+  Criptografado1 = '™¦¥¤£¢¡ Ÿž§ªšzµ¶—´³²/±­¯®x¬Zf`rec^bnhg#|†€’…ƒ~‚Žˆ‡w\vdsqpomlkð–„“‘Œ‹y{]_tauij«©œ¨[}”•‰Š›™™';
+  Criptografado2 = 'œ¥¤£¢¡ Ÿž¦©™y´µ–³²±.°¬®­w«Ye_qdb]amgf"{…‘„‚}‡†v[ucrponlkjï•ƒ’ŽŒ‹Šxz\^s`thiª¨›§Z|~“€”ˆ‰š˜œ';
 var
-  x, i                                  : Integer;
+  x, i:                                   Integer;
   str, Criptografado, Retornar, OutValue: String;
 begin
-  Retornar := ':1234567890-=]"!@#$%�&*()_+}qwertyuiop�[QWERTYUIOP`{asdfghjkl�A�SDFGHJKL�^\zxcvbnm,.;/|ZXCVBNM<>:';
+  Retornar := ':1234567890-=]"!@#$%¨&*()_+}qwertyuiop´[QWERTYUIOP`{asdfghjklçAÃSDFGHJKLÇ^\zxcvbnm,.;/|ZXCVBNM<>:';
   if V_Retorna = 4568 then
   begin
     for x := 1 to Length(V_Valor) do
@@ -1112,6 +1117,7 @@ begin
     result         := StringReplace(V_Valor, '>', ':', [rfReplaceAll, rfIgnoreCase]);
   end;
 END;
+
 
 function TFrmPDV.Campo_Configuracao(Campo: stRing): string;
 var
@@ -1308,38 +1314,65 @@ begin
 
   // AJUSTADO ja
   // showmessage(DesCriptografar(a1.FieldByName('valor').AsString, 4568)+' confira');
+
   vcestoque := 'S';
+  /// /// bota se existir na pasta desse exe um arquivo chamado vsestoque.txt ele seta como N
   if DesCriptografar(a1.FieldByName('valor').AsString, 4568) = 'N' then
     vcestoque := 'N';
 
 end;
 
+function TFrmPDV.Criptografar(V_Valor: String; V_Retorna: Word): String;
+const
+  cDigitado = ':1234567890-=]"!@#$%¨&*()_+}qwertyuiop´[QWERTYUIOP`{asdfghjklçAÃSDFGHJKLÇ^\zxcvbnm,.;/|ZXCVBNM<>:';
+  // '¦¥¤£¢¡ Ÿž§ªšzµ¶—´³²/±­¯®x¬Zf`rec^bnhg#|†€’…ƒ~‚Žˆ‡w\vdsqpomlkð–„“‘Œ‹y{]_tauij«©œ¨[}”•‰Š›™';
+var
+  mResultado, str: string;
+  x              : Integer;
+begin;
+  if V_Retorna = 4568 then
+  begin
+    mResultado := '™¦¥¤£¢¡ Ÿž§ªšzµ¶—´³²/±­¯®x¬Zf`rec^bnhg#|†€’…ƒ~‚Žˆ‡w\vdsqpomlkð–„“‘Œ‹y{]_tauij«©œ¨[}”•‰Š›™';
+
+  end;
+  if V_Retorna = 4567 then
+  begin
+    mResultado := 'œ¥¤£¢¡ Ÿž¦©™y´µ–³²±.°¬®­w«Ye_qdb]amgf"{…‘„‚}‡†v[ucrponlkjï•ƒ’ŽŒ‹Šxz\^s`thiª¨›§Z|~“€”ˆ‰š˜œ';
+  end;
+  for x := 1 to Length(V_Valor) do
+    if POS(V_Valor[x], cDigitado) > 0 then
+      // Result :=   Result +  cDigitado[Pos(V_Valor[x], cDigitado)];
+      V_Valor[x] := mResultado[POS(V_Valor[x], cDigitado)];
+  // Result := V_Valor;
+  result := StringReplace(V_Valor, '>', ':', [rfReplaceAll, rfIgnoreCase]);
+END;
+
 function DesCriptografar(V_Valor: String; V_Retorna: Word): String;
 const
-  Criptografado1 = '�������������z������/����x�Zf`rec^bnhg#|�����~����w\vdsqpomlk���������y{]_tauij����[}��������';
-  Criptografado2 = '�������������y������.����w�Ye_qdb]amgf"{����}����v[ucrponlkj���������xz\^s`thi����Z|~��������';
+  Criptografado1 = '™¦¥¤£¢¡ Ÿž§ªšzµ¶—´³²/±­¯®x¬Zf`rec^bnhg#|†€’…ƒ~‚Žˆ‡w\vdsqpomlkð–„“‘Œ‹y{]_tauij«©œ¨[}”•‰Š›™™';
+  Criptografado2 = 'œ¥¤£¢¡ Ÿž¦©™y´µ–³²±.°¬®­w«Ye_qdb]amgf"{…‘„‚}‡†v[ucrponlkjï•ƒ’ŽŒ‹Šxz\^s`thiª¨›§Z|~“€”ˆ‰š˜œ';
 var
   x, i                                  : Integer;
   str, Criptografado, Retornar, OutValue: String;
 begin
-  Retornar := ':1234567890-=]"!@#$%�&*()_+}qwertyuiop�[QWERTYUIOP`{asdfghjkl�A�SDFGHJKL�^\zxcvbnm,.;/|ZXCVBNM<>:';
+  Retornar := ':1234567890-=]"!@#$%¨&*()_+}qwertyuiop´[QWERTYUIOP`{asdfghjklçAÃSDFGHJKLÇ^\zxcvbnm,.;/|ZXCVBNM<>:';
   if V_Retorna = 4568 then
   begin
     // showmessage('entrou 1');
-    // Criptografado := '������������z������/����x�Zf`rec^bnhg#|�����~����w\vdsqpomlk���������y{]_tauij����[}�������';
+    // Criptografado := '¦¥¤£¢¡ Ÿž§ªšzµ¶—´³²/±­¯®x¬Zf`rec^bnhg#|†€’…ƒ~‚Žˆ‡w\vdsqpomlkð–„“‘Œ‹y{]_tauij«©œ¨[}”•‰Š›™';
     for x := 1 to Length(V_Valor) do
       if POS(V_Valor[x], Criptografado1) <> 0 then
         V_Valor[x] := Retornar[POS(V_Valor[x], Criptografado1)];
-    result         := V_Valor; // StringReplace(V_Valor,'�',' ',[rfReplaceAll, rfIgnoreCase]);
+    result         := V_Valor; // StringReplace(V_Valor,'·',' ',[rfReplaceAll, rfIgnoreCase]);
   end;
   if V_Retorna = 4567 then
   begin
     // showmessage('entrou 2 ');
-    // Criptografado := '������������y������.����w�Ye_qdb]amgf"{����}����v[ucrponlkj���������xz\^s`thi����Z|~��������';
+    // Criptografado := '¥¤£¢¡ Ÿž¦©™y´µ–³²±.°¬®­w«Ye_qdb]amgf"{…‘„‚}‡†v[ucrponlkjï•ƒ’ŽŒ‹Šxz\^s`thiª¨›§Z|~“€”ˆ‰š˜œ';
     for x := 1 to Length(V_Valor) do
       if POS(V_Valor[x], Criptografado2) <> 0 then
         V_Valor[x] := Retornar[POS(V_Valor[x], Criptografado2)];
-    // Result := V_Valor; // StringReplace(V_Valor,'�',' ',[rfReplaceAll, rfIgnoreCase]);
+    // Result := V_Valor; // StringReplace(V_Valor,'·',' ',[rfReplaceAll, rfIgnoreCase]);
     result := StringReplace(V_Valor, '>', ':', [rfReplaceAll, rfIgnoreCase]);
   end;
 END;
@@ -1359,12 +1392,12 @@ begin
     if Assigned(goTerminal) then
       goTerminal.Destroy;
     goTerminal := goPDVClass.GetTerminal(uGlobalLibPDV.GetSerialHD);
-    // if goTerminal <> nil then
-    // begin
-    // if lblLastSync.Caption <> goTerminal.pterm_last_sync_str then
-    // lblLastSync.font.Color := clBlue;
-    doSetTerminal;
-    // end;
+    if goTerminal <> nil then
+    begin
+      // if lblLastSync.Caption <> goTerminal.pterm_last_sync_str then
+      // lblLastSync.font.Color := clBlue;
+      doSetTerminal;
+    end;
 
     existNotasContigencia;
   end;
@@ -1873,11 +1906,11 @@ begin
         if goCancelMode then
           exit;
 
-        if goPnf_id = 0 then
-        begin
-          MessageBox(handle, 'Venda n�o iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
-          exit;
-        end;
+        // if goPnf_id = 0 then
+        // begin
+        // MessageBox(handle, 'Venda n�o iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
+        // exit;
+        // end;
         goTipoCancelaItem := tciPorCodigo;
         doSetModoCancelaItem;
         exit;
@@ -1891,7 +1924,7 @@ begin
 
         if goPnf_id = 0 then
         begin
-          MessageBox(handle, 'Venda n�o iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
+          MessageBox(handle, 'Venda não iniciada', 'I9 PDV', MB_ICONEXCLAMATION);
           exit;
         end;
         goTipoCancelaItem := tciPorSeq;
